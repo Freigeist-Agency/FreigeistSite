@@ -2,6 +2,12 @@
 <html data-wf-page="6ad9fe8bb3e3e8bc342ffa76" data-wf-site="6a68dc0d11caaa902c54433b" lang="en">
 <head>
   <meta charset="utf-8">
+  <script>
+    if (location.pathname.endsWith('.html')) {
+      var clean = location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+      location.replace(clean + location.search + location.hash);
+    }
+  </script>
   <title>website diagnostics. | freigeistagency™</title>
   <meta content="fixed-price fixes for the website and email problems we find from the outside: DNS &amp; email security, mobile speed, lead capture. you pay after you verify the fix." name="description">
   <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -148,13 +154,13 @@ gtag('set','ads_data_redaction',true);
       </div>
       <div class="div-block-39 _2">
         <div class="div-block-53">
-          <a href="terms-conditions.html" class="link-block w-inline-block">
+          <a href="/terms-conditions" class="link-block w-inline-block">
             <div class="text-block-3 black">terms &amp; conditions.</div>
           </a>
-          <a href="impressum.html" class="link-block w-inline-block">
+          <a href="/impressum" class="link-block w-inline-block">
             <div class="text-block-3 black">imprint.</div>
           </a>
-          <a href="privacy-policy.html" class="link-block w-inline-block">
+          <a href="/privacy-policy" class="link-block w-inline-block">
             <div class="text-block-3 black">privacy policy.</div>
           </a>
         </div><img sizes="(max-width: 1018px) 100vw, 1018px" srcset="images/FRED-APPROVED-V5-p-500.png 500w, images/FRED-APPROVED-V5-p-800.png 800w, images/FRED-APPROVED-V5.png 1018w" alt="" src="images/FRED-APPROVED-V5.png" loading="lazy" class="image-60">
@@ -166,10 +172,10 @@ gtag('set','ads_data_redaction',true);
       <div class="locales-wrapper w-locales-list">
         <div role="list" class="locales-list w-locales-items">
           <div role="listitem" class="locale w-locales-item">
-            <a hreflang="en" href="diagnostics.html" aria-current="page" class="link locale">EN</a>
+            <a hreflang="en" href="/diagnostics" aria-current="page" class="link locale">EN</a>
           </div>
           <div role="listitem" class="locale w-locales-item">
-            <a hreflang="de-DE" href="diagnostics.html" aria-current="page" class="link locale">DE</a>
+            <a hreflang="de-DE" href="/diagnostics" aria-current="page" class="link locale">DE</a>
           </div>
         </div>
       </div>
@@ -246,7 +252,7 @@ a.link-block-2:not(.black):not(.menu):focus-visible > :not(._2)::after {
   </div>
   <div class="nav_top bottom">
     <div class="w-layout-blockcontainer container-2 w-container">
-      <a href="index.html" class="link-block-2 w-inline-block">
+      <a href="/" class="link-block-2 w-inline-block">
         <div class="text-block-3">home.</div>
       </a>
     </div>

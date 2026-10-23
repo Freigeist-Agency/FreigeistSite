@@ -2,6 +2,12 @@
 <html data-wf-page="6abb4a2e08c237041093c39e" data-wf-site="6a68dc0d11caaa902c54433b" lang="en">
 <head>
   <meta charset="utf-8">
+  <script>
+    if (location.pathname.endsWith('.html')) {
+      var clean = location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+      location.replace(clean + location.search + location.hash);
+    }
+  </script>
   <title>Protected page</title>
   <meta content="Protected page" property="og:title">
   <meta content="Protected page" name="twitter:title">

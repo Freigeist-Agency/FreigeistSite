@@ -2,6 +2,12 @@
 <html data-wf-page="6a8ea24e1a9422ef3a8aacc4" data-wf-site="6a68dc0d11caaa902c54433b" lang="en">
 <head>
   <meta charset="utf-8">
+  <script>
+    if (location.pathname.endsWith('.html')) {
+      var clean = location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+      location.replace(clean + location.search + location.hash);
+    }
+  </script>
   <title>discover freigeistagency™</title>
   <meta content="freigeistagency™ builds trust infrastructure for growing companies: brand, strategy, performance marketing, design &amp; web. based in cologne &amp; nairobi." name="description">
   <meta content="discover freigeistagency™" property="og:title">
@@ -253,10 +259,10 @@ gtag('set','ads_data_redaction',true);
       <div class="locales-wrapper w-locales-list">
         <div role="list" class="locales-list w-locales-items">
           <div role="listitem" class="locale w-locales-item">
-            <a hreflang="en" href="index.html" aria-current="page" class="link locale">EN</a>
+            <a hreflang="en" href="/" aria-current="page" class="link locale">EN</a>
           </div>
           <div role="listitem" class="locale w-locales-item">
-            <a hreflang="de-DE" href="index.html" aria-current="page" class="link locale">DE</a>
+            <a hreflang="de-DE" href="/" aria-current="page" class="link locale">DE</a>
           </div>
         </div>
       </div>
@@ -841,13 +847,13 @@ gtag('set','ads_data_redaction',true);
       </div>
       <div class="div-block-39 _2">
         <div class="div-block-53">
-          <a href="terms-conditions.html" class="link-block w-inline-block">
+          <a href="/terms-conditions" class="link-block w-inline-block">
             <div class="text-block-3 black">terms &amp; conditions.</div>
           </a>
-          <a href="impressum.html" class="link-block w-inline-block">
+          <a href="/impressum" class="link-block w-inline-block">
             <div class="text-block-3 black">imprint.</div>
           </a>
-          <a href="privacy-policy.html" class="link-block w-inline-block">
+          <a href="/privacy-policy" class="link-block w-inline-block">
             <div class="text-block-3 black">privacy policy.</div>
           </a>
         </div><img sizes="153px" srcset="images/FRED-APPROVED-V5-p-500.png 500w, images/FRED-APPROVED-V5-p-800.png 800w, images/FRED-APPROVED-V5.png 1018w" alt="" src="images/FRED-APPROVED-V5.png" loading="lazy" class="image-60">

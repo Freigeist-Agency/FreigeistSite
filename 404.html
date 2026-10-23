@@ -2,6 +2,14 @@
 <html data-wf-page="6a91388d6fd11bdfdaea0189" data-wf-site="6a68dc0d11caaa902c54433b" lang="en">
 <head>
   <meta charset="utf-8">
+  <script>
+    if (location.pathname.endsWith('.html')) {
+      var clean = location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+      location.replace(clean + location.search + location.hash);
+    } else if (location.pathname.length > 1 && location.pathname.endsWith('/')) {
+      location.replace(location.pathname.replace(/\/+$/, '') + location.search + location.hash);
+    }
+  </script>
   <title>Not Found</title>
   <meta content="Not Found" property="og:title">
   <meta content="Not Found" name="twitter:title">
