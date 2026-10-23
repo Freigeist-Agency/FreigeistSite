@@ -50,6 +50,9 @@ def sync_de():
             print(f"Failed to fetch {remote_url}: {e}")
             continue
 
+        # 0. Remove data-wf-domain (which triggers Webflow.js to inject "Made in Webflow" badge)
+        content = re.sub(r'\s*data-wf-domain="[^"]*"', '', content)
+
         # 1. Use local stylesheets
         content = re.sub(
             r'<link href="https://cdn\.prod\.website-files\.com/[^"]+/css/sema-freigeist\.webflow\.shared\.[^"]+\.css"[^>]*>',
@@ -70,7 +73,7 @@ def sync_de():
             '',
             content
         )
-        content = content.replace("</head>", f"{FAVICONS}\n</head>", 1)
+        content = content.replace("</head>", f"{FAVICONS}\n  <style>.w-webflow-badge {{ display: none !important; }}</style>\n</head>", 1)
 
         # 4. Inject head clean URL redirect
         target_script = HEAD_SCRIPT_404 if "404" in local_rel_path else HEAD_SCRIPT_REGULAR
