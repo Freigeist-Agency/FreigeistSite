@@ -4,6 +4,12 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      sync_de:
+        description: 'Re-sync German pages from Webflow staging'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -20,6 +26,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+
+      - name: Sync German pages if requested
+        if: "${{ github.event.inputs.sync_de == 'true' }}"
+        run: python3 scripts/sync_de.py
 
       - name: Run Clean URLs Script
         run: python3 scripts/clean_urls.py

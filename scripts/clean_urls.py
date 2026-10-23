@@ -25,14 +25,22 @@ def clean_html_file(file_path):
 
     original = content
     filename = os.path.basename(file_path)
+    is_de = os.path.basename(os.path.dirname(file_path)) == "de"
+    prefix = "/de" if is_de else ""
 
     # 1. Ensure head script is present
     target_script = HEAD_SCRIPT_404 if filename == "404.html" else HEAD_SCRIPT_REGULAR
-    if "location.pathname.endsWith('.html')" not in content:
+    if "location.pathname.endsWith('.html')" not in content and "location.pathname.endsWith(\".html\")" not in content:
         if '<meta charset="utf-8">' in content:
             content = content.replace(
                 '<meta charset="utf-8">',
                 '<meta charset="utf-8">\n' + target_script,
+                1
+            )
+        elif '<head><meta charset="utf-8"/>' in content:
+            content = content.replace(
+                '<head><meta charset="utf-8"/>',
+                '<head><meta charset="utf-8"/>\n' + target_script,
                 1
             )
         elif '<head>' in content:
@@ -51,10 +59,12 @@ def clean_html_file(file_path):
         clean_target = target.lstrip("./")
 
         if clean_target == "index.html":
-            return f'href={quote}/{tail}{quote}'
+            target_path = f"{prefix}/" if prefix else "/"
+            return f'href={quote}{target_path}{tail}{quote}'
         elif clean_target.endswith(".html"):
             slug = clean_target[:-5]
-            return f'href={quote}/{slug}{tail}{quote}'
+            target_path = f"{prefix}/{slug}"
+            return f'href={quote}{target_path}{tail}{quote}'
         return m.group(0)
 
     pattern = re.compile(r'href=(["\'])(?:\./)?([a-zA-Z0-9_\-]+\.html)([#?][^"\']*)?\1')
@@ -78,7 +88,7 @@ def clean_html_file(file_path):
 
 def main():
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    html_files = glob.glob(os.path.join(root, "*.html"))
+    html_files = glob.glob(os.path.join(root, "*.html")) + glob.glob(os.path.join(root, "de", "*.html"))
     changed = 0
     for file_path in sorted(html_files):
         if clean_html_file(file_path):
