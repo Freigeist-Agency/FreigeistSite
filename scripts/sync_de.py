@@ -83,17 +83,7 @@ def sync_de():
             elif '<meta charset="utf-8">' in content:
                 content = content.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n{target_script}', 1)
 
-        # 5. Language switcher links:
-        # On DE pages, DE is current and hidden, EN is visible pointing to the English equivalent
-        switcher_html = f'<div class="locales-wrapper w-locales-list"><div role="list" class="locales-list w-locales-items"><div role="listitem" class="locale w-locales-item"><a hreflang="en" href="{en_path}" class="link locale">EN</a></div><div role="listitem" class="locale w-locales-item"><a hreflang="de-DE" href="{de_path}" aria-current="page" class="link locale w--current">DE</a></div></div></div>'
-        content = re.sub(
-            r'<div class="locales-wrapper w-locales-list">.*?</div></div></div>',
-            switcher_html,
-            content,
-            flags=re.DOTALL
-        )
-
-        # 6. Internal footer / navigation links to German subpages
+        # 5. Internal footer / navigation links to German subpages
         content = content.replace('href="/de/terms-conditions.html"', 'href="/de/terms-conditions"')
         content = content.replace('href="terms-conditions.html"', 'href="/de/terms-conditions"')
         content = content.replace('href="/terms-conditions"', 'href="/de/terms-conditions"')
@@ -102,6 +92,16 @@ def sync_de():
         content = content.replace('href="privacy-policy.html"', 'href="/de/privacy-policy"')
         content = content.replace('href="/privacy-policy"', 'href="/de/privacy-policy"')
         content = content.replace('href="index.html"', 'href="/de"')
+
+        # 6. Language switcher links:
+        # On DE pages, DE is current and hidden, EN is visible pointing to the English equivalent
+        switcher_html = f'<div class="locales-wrapper w-locales-list"><div role="list" class="locales-list w-locales-items"><div role="listitem" class="locale w-locales-item"><a hreflang="en" href="{en_path}" class="link locale">EN</a></div><div role="listitem" class="locale w-locales-item"><a hreflang="de-DE" href="{de_path}" aria-current="page" class="link locale w--current">DE</a></div></div></div>'
+        content = re.sub(
+            r'<div class="locales-wrapper w-locales-list">.*?</div></div></div>',
+            switcher_html,
+            content,
+            flags=re.DOTALL
+        )
 
         with open(local_path, "w", encoding="utf-8") as f:
             f.write(content)
