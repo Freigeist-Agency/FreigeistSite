@@ -1,0 +1,837 @@
+{
+  "version": 1,
+  "files": [
+    "index.html",
+    "de/index.html"
+  ],
+  "pages": {
+    "index.html": {
+      "de": "Startseite (Englisch)",
+      "en": "Home page (English)"
+    },
+    "de/index.html": {
+      "de": "Startseite (Deutsch)",
+      "en": "Home page (German)"
+    }
+  },
+  "groups": {
+    "en.home": {
+      "de": "Startseite, Englisch",
+      "en": "Home page, English"
+    },
+    "de.home": {
+      "de": "Startseite, Deutsch",
+      "en": "Home page, German"
+    }
+  },
+  "fields": [
+    {
+      "key": "en.hero.kicker",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Hero, kleine Zeile darüber (Englisch)",
+        "en": "Hero, small line above (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.hero.headline",
+      "type": "lines",
+      "group": "en.home",
+      "label": {
+        "de": "Hero-Überschrift (Englisch)",
+        "en": "Hero headline (English)"
+      },
+      "max": 60,
+      "maxItems": 3
+    },
+    {
+      "key": "en.hero.closing",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Hero, letzter Satz (Englisch)",
+        "en": "Hero, last sentence (English)"
+      },
+      "max": 140
+    },
+    {
+      "key": "en.projects.heading",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Überschrift Projekte (Englisch)",
+        "en": "Projects heading (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project1.name",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 1, Name (Englisch)",
+        "en": "Project 1, name (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project1.industry",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 1, Branche (Englisch)",
+        "en": "Project 1, industry (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project2.name",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 2, Name (Englisch)",
+        "en": "Project 2, name (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project2.industry",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 2, Branche (Englisch)",
+        "en": "Project 2, industry (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project3.name",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 3, Name (Englisch)",
+        "en": "Project 3, name (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project3.industry",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 3, Branche (Englisch)",
+        "en": "Project 3, industry (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project4.name",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 4, Name (Englisch)",
+        "en": "Project 4, name (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project4.industry",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 4, Branche (Englisch)",
+        "en": "Project 4, industry (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project5.name",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 5, Name (Englisch)",
+        "en": "Project 5, name (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project5.industry",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 5, Branche (Englisch)",
+        "en": "Project 5, industry (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project6.name",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 6, Name (Englisch)",
+        "en": "Project 6, name (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.project6.industry",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Projekt 6, Branche (Englisch)",
+        "en": "Project 6, industry (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.steps.heading",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Überschrift Schritte (Englisch)",
+        "en": "Steps heading (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.step1.title",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Schritt 1, Titel (Englisch)",
+        "en": "Step 1, title (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.step1.text",
+      "type": "lines",
+      "group": "en.home",
+      "label": {
+        "de": "Schritt 1, Text (Englisch)",
+        "en": "Step 1, text (English)"
+      },
+      "max": 400,
+      "maxItems": 4
+    },
+    {
+      "key": "en.step2.title",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Schritt 2, Titel (Englisch)",
+        "en": "Step 2, title (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.step2.text",
+      "type": "lines",
+      "group": "en.home",
+      "label": {
+        "de": "Schritt 2, Text (Englisch)",
+        "en": "Step 2, text (English)"
+      },
+      "max": 400,
+      "maxItems": 4
+    },
+    {
+      "key": "en.step3.title",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Schritt 3, Titel (Englisch)",
+        "en": "Step 3, title (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.step3.text",
+      "type": "lines",
+      "group": "en.home",
+      "label": {
+        "de": "Schritt 3, Text (Englisch)",
+        "en": "Step 3, text (English)"
+      },
+      "max": 400,
+      "maxItems": 4
+    },
+    {
+      "key": "en.services.heading",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Überschrift Leistungen (Englisch)",
+        "en": "Services heading (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.service1",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Leistung 1 (Englisch)",
+        "en": "Service 1 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.service2",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Leistung 2 (Englisch)",
+        "en": "Service 2 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.service3",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Leistung 3 (Englisch)",
+        "en": "Service 3 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.service4",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Leistung 4 (Englisch)",
+        "en": "Service 4 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.service5",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Leistung 5 (Englisch)",
+        "en": "Service 5 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry1",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 1 (Englisch)",
+        "en": "Industry 1 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry2",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 2 (Englisch)",
+        "en": "Industry 2 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry3",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 3 (Englisch)",
+        "en": "Industry 3 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry4",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 4 (Englisch)",
+        "en": "Industry 4 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry5",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 5 (Englisch)",
+        "en": "Industry 5 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry6",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 6 (Englisch)",
+        "en": "Industry 6 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.industry7",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Branche 7 (Englisch)",
+        "en": "Industry 7 (English)"
+      },
+      "max": 40
+    },
+    {
+      "key": "en.results.heading",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Überschrift Kundenergebnisse (Englisch)",
+        "en": "Client results heading (English)"
+      },
+      "max": 60
+    },
+    {
+      "key": "en.cta.start",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Button, Projekt starten (Englisch)",
+        "en": "Button, start a project (English)"
+      },
+      "max": 30
+    },
+    {
+      "key": "en.cta.contact",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Überschrift Kontakt (Englisch)",
+        "en": "Contact heading (English)"
+      },
+      "max": 30
+    },
+    {
+      "key": "en.contact.email",
+      "type": "text",
+      "group": "en.home",
+      "label": {
+        "de": "Kontakt-E-Mail (angezeigter Text) (Englisch)",
+        "en": "Contact email (shown text) (English)"
+      },
+      "max": 80
+    },
+    {
+      "key": "de.hero.kicker",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Hero, kleine Zeile darüber (Deutsch)",
+        "en": "Hero, small line above (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.hero.headline",
+      "type": "lines",
+      "group": "de.home",
+      "label": {
+        "de": "Hero-Überschrift (Deutsch)",
+        "en": "Hero headline (German)"
+      },
+      "max": 60,
+      "maxItems": 3
+    },
+    {
+      "key": "de.hero.closing",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Hero, letzter Satz (Deutsch)",
+        "en": "Hero, last sentence (German)"
+      },
+      "max": 140
+    },
+    {
+      "key": "de.projects.heading",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Überschrift Projekte (Deutsch)",
+        "en": "Projects heading (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project1.name",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 1, Name (Deutsch)",
+        "en": "Project 1, name (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project1.industry",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 1, Branche (Deutsch)",
+        "en": "Project 1, industry (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project2.name",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 2, Name (Deutsch)",
+        "en": "Project 2, name (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project2.industry",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 2, Branche (Deutsch)",
+        "en": "Project 2, industry (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project3.name",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 3, Name (Deutsch)",
+        "en": "Project 3, name (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project3.industry",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 3, Branche (Deutsch)",
+        "en": "Project 3, industry (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project4.name",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 4, Name (Deutsch)",
+        "en": "Project 4, name (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project4.industry",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 4, Branche (Deutsch)",
+        "en": "Project 4, industry (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project5.name",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 5, Name (Deutsch)",
+        "en": "Project 5, name (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project5.industry",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 5, Branche (Deutsch)",
+        "en": "Project 5, industry (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project6.name",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 6, Name (Deutsch)",
+        "en": "Project 6, name (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.project6.industry",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Projekt 6, Branche (Deutsch)",
+        "en": "Project 6, industry (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.steps.heading",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Überschrift Schritte (Deutsch)",
+        "en": "Steps heading (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.step1.title",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Schritt 1, Titel (Deutsch)",
+        "en": "Step 1, title (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.step1.text",
+      "type": "lines",
+      "group": "de.home",
+      "label": {
+        "de": "Schritt 1, Text (Deutsch)",
+        "en": "Step 1, text (German)"
+      },
+      "max": 400,
+      "maxItems": 4
+    },
+    {
+      "key": "de.step2.title",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Schritt 2, Titel (Deutsch)",
+        "en": "Step 2, title (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.step2.text",
+      "type": "lines",
+      "group": "de.home",
+      "label": {
+        "de": "Schritt 2, Text (Deutsch)",
+        "en": "Step 2, text (German)"
+      },
+      "max": 400,
+      "maxItems": 4
+    },
+    {
+      "key": "de.step3.title",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Schritt 3, Titel (Deutsch)",
+        "en": "Step 3, title (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.step3.text",
+      "type": "lines",
+      "group": "de.home",
+      "label": {
+        "de": "Schritt 3, Text (Deutsch)",
+        "en": "Step 3, text (German)"
+      },
+      "max": 400,
+      "maxItems": 4
+    },
+    {
+      "key": "de.services.heading",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Überschrift Leistungen (Deutsch)",
+        "en": "Services heading (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.service1",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Leistung 1 (Deutsch)",
+        "en": "Service 1 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.service2",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Leistung 2 (Deutsch)",
+        "en": "Service 2 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.service3",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Leistung 3 (Deutsch)",
+        "en": "Service 3 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.service4",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Leistung 4 (Deutsch)",
+        "en": "Service 4 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.service5",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Leistung 5 (Deutsch)",
+        "en": "Service 5 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry1",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 1 (Deutsch)",
+        "en": "Industry 1 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry2",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 2 (Deutsch)",
+        "en": "Industry 2 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry3",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 3 (Deutsch)",
+        "en": "Industry 3 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry4",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 4 (Deutsch)",
+        "en": "Industry 4 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry5",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 5 (Deutsch)",
+        "en": "Industry 5 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry6",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 6 (Deutsch)",
+        "en": "Industry 6 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.industry7",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Branche 7 (Deutsch)",
+        "en": "Industry 7 (German)"
+      },
+      "max": 40
+    },
+    {
+      "key": "de.results.heading",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Überschrift Kundenergebnisse (Deutsch)",
+        "en": "Client results heading (German)"
+      },
+      "max": 60
+    },
+    {
+      "key": "de.cta.start",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Button, Projekt starten (Deutsch)",
+        "en": "Button, start a project (German)"
+      },
+      "max": 30
+    },
+    {
+      "key": "de.cta.contact",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Überschrift Kontakt (Deutsch)",
+        "en": "Contact heading (German)"
+      },
+      "max": 30
+    },
+    {
+      "key": "de.contact.email",
+      "type": "text",
+      "group": "de.home",
+      "label": {
+        "de": "Kontakt-E-Mail (angezeigter Text) (Deutsch)",
+        "en": "Contact email (shown text) (German)"
+      },
+      "max": 80
+    }
+  ]
+}

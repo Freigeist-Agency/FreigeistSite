@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Re-pulls the German pages from Webflow staging. That replaces de/index.html whole, so the Forge edit markers
+# (data-edit="de.*", see .forge-edit.json) are lost: the forge-edit check then fails until they are added back
+# and `node tools/check-forge-edit.mjs` passes again.
 import urllib.request
 import re
 import os
