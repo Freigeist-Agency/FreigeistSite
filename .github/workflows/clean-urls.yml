@@ -2,7 +2,7 @@ name: Clean Webflow URLs
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "staging" ]
   workflow_dispatch:
     inputs:
       sync_de:
