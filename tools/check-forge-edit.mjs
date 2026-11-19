@@ -3,7 +3,7 @@
 // least one page, no page carries a key the manifest doesn't know, and the lists (reviews, FAQ) still start with
 // their item template. It also compares where each key sits with .forge-edit.lock.json, so a marker that vanishes
 // from one page is caught even while the same key is still on another. Run on every pull request
-// (.github/workflows/forge-edit.yml), so a Webflow re-sync (scripts/sync_de.py) or a hand edit that drops a data-edit attribute shows up
+// (.github/workflows/forge-edit.yml), so a hand edit that drops a data-edit attribute shows up
 // before it reaches the live site. No dependencies.
 //
 //   node tools/check-forge-edit.mjs           check
