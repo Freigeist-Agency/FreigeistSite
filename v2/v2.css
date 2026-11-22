@@ -1,0 +1,988 @@
+/* Freigeist v2, built frame by frame from the Figma file "mzuka".
+   One Figma frame = one screen. Every position is in Figma pixels of the 1512 x 982 frame,
+   multiplied by --u, which scales the frame so all of it fits on screen (width AND height).
+   The frame then stretches to the real screen: when the screen is wider or taller than the
+   frame, the spare room ("slack") is shared out by each element's anchor:
+     --ax: 0 = keeps its distance from the left edge, 0.5 = from the centre, 1 = from the right
+     --ay: 0 = from the top edge, 0.5 = from the centre, 1 = from the bottom
+   so elements that touch an edge in Figma stay on that edge of the screen. */
+
+:root {
+  --void: #000000;
+  --sunbeam: #ffea00;
+  --platinum: #f0f0f0;
+
+  --fw: 1512;                                  /* frame width in Figma pixels */
+  --u: min(100vw / var(--fw), 100svh / 982);
+  --oy: calc((100svh - 982 * var(--u)) / 2);   /* centre slack, used by v2.js */
+}
+
+/* phone: same composition on a narrower virtual canvas so the words stay big enough to read */
+@media (max-width: 767px) {
+  :root { --fw: 820; --u: calc(100vw / 820); }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  overflow-x: clip;
+  background: #e2e2e2;              /* sky colour of the video, shown before it loads */
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  text-transform: lowercase;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The stage holds the video and every frame element. The video must be inside it: the
+   colour flip (mix-blend-mode) only sees what is in the same stage. No z-index or
+   transform on the wrappers inside it, for the same reason.
+   Without the script the stage just scrolls like a normal page (fail open). */
+.stage {
+  position: relative;
+  height: calc(var(--oy) + 2000 * var(--u) + 100svh);
+}
+
+.motion .stage {
+  position: fixed;
+  inset: 0;
+  height: auto;
+  overflow: hidden;
+  background: #fff;                 /* shows once the video shrinks (Figma frame 109:3) */
+}
+
+/* the scroll distance for the frame-to-frame transitions; height is set by v2.js */
+.scroll-space { height: 0; }
+
+.bg-video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;         /* puts the rock horizon where Figma has it (about halfway down) */
+  pointer-events: none;
+}
+.motion .bg-video {
+  position: absolute;
+  transform-origin: 100% 100%;      /* shrinks into the bottom-right corner */
+}
+
+.logo-block,
+.scroll-hint,
+.wm,
+.we-word,
+.we-list,
+.portfolio,
+.featured {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  /* 100% = the stage's width, which leaves out the scrollbar */
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  mix-blend-mode: difference;
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* ---- frame 12 ---- */
+.logo-block {
+  --x: -10; --y: 0;
+  --ax: 0; --ay: 0;                 /* top-left corner of the screen */
+  display: block;
+  width: calc(491 * var(--u));
+  height: auto;                     /* follows its viewBox, which v2.js shortens into the nav */
+  overflow: visible;
+}
+
+.scroll-hint {
+  --x: 843; --y: 193;
+  font-size: max(12px, 16 * var(--u));
+}
+
+/* "agency™" touches the left edge; "geist" and the tagline stay lined up with it.
+   "frei" touches the bottom-right corner. */
+.wm { font-size: calc(207 * var(--u)); }
+.wm-geist   { --x: 504;  --y: 304; --ax: 0; }
+.wm-agency  { --x: 4;    --y: 476; --ax: 0; }
+.wm-frei    { --x: 1257; --y: 778; --ax: 1; --ay: 1; }
+.wm-tagline {
+  --x: 675; --y: 623; --ax: 0;
+  font-size: max(12px, 20 * var(--u));
+  width: calc(285 * var(--u));
+  min-width: 15em;
+  white-space: normal;
+}
+
+/* ---- "we": not in frame 12; in frames 23, 35 and 24 ----
+   Placed at its frame 23 spot (799). v2.js starts it just below the screen. Without the
+   script it sits below the first screen and scrolls in normally.
+   "we" + its list are centred as one group: 723 wide (measured: "we" 579, list 178, with
+   frame 24's 545 from the start of "we" to the list), so "we" starts at 756 - 361.5. */
+.we { display: contents; }
+
+.we-word {
+  --x: 395; --y: 799;
+  font-size: calc(500 * var(--u));
+  line-height: 1;
+}
+
+.we-list {
+  --x: 940; --y: 944;               /* beside "we", 145 below its top */
+  list-style: none;
+  color: var(--platinum);
+  font-size: max(16px, 32 * var(--u));
+}
+
+/* ---- frame 24: "portfolio" link, centred near the bottom. v2.js brings it up from below. ---- */
+.portfolio {
+  --x: 756; --y: 782;
+  translate: -50% 0;                /* centred on x (separate from the transform GSAP animates) */
+  font-size: max(20px, 64 * var(--u));
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-thickness: 0.035em;
+  text-underline-position: from-font;
+}
+
+/* ---- frame 137:163: "featured work." along the bottom edge ----
+   Figma puts the baseline at 988. With line-height 1 the baseline sits 283.6 below the top
+   of the line (Arial), so top = 704.4. It is an endless carousel across the full screen width:
+   v2.js fills the track with copies and moves it left to right, and brings it up from below
+   the screen. Without the script one copy sits centred. */
+.featured {
+  --x: 0; --y: 704.4;
+  --ax: 0; --ay: 1;                 /* full width, bottom edge */
+  width: 100%;
+  text-align: center;
+  font-size: calc(335 * var(--u));
+  letter-spacing: -0.1em;
+  line-height: 1;
+  color: var(--platinum);
+}
+
+.featured-track { display: inline-flex; }
+.motion .featured { text-align: left; }
+.featured-copy { padding-right: 0.25em; }   /* the gap between "featured work." and the next copy */
+
+/* ---- featured projects (Figma 138:215 and 140:364) ----
+   Six projects. The one in focus is the big card; the others show as thin strips: the ones
+   already seen stacked above it, the coming ones below. Every project is a full-size card at
+   the card spot; v2.js clips it down to a thin slice through its middle and moves it to its
+   strip spot, so a strip opening into the card is one smooth change. Plain black text and
+   boxes, no colour flip (as in Figma). Placeholders until the real videos arrive. */
+.work {                               /* moved as one by the scroll; same box as the stage */
+  position: absolute;
+  inset: 0;
+}
+
+.proj,
+.proj-name,
+.proj-tags {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+}
+
+.proj {
+  --x: 206; --y: 168;
+  width: calc(1105 * var(--u));
+  height: calc(642 * var(--u));
+  display: grid;
+  place-items: center;
+  background: var(--bg, var(--void));
+  text-decoration: none;
+}
+.proj-2 { --bg: #3a3a3a; }
+.proj-3 { --bg: #1f1f1f; }
+.proj-4 { --bg: #555; }
+.proj-5 { --bg: #2c2c2c; }
+
+.project-placeholder {                /* stand-in until the project video arrives */
+  color: var(--platinum);
+  font-size: max(12px, 16 * var(--u));
+  letter-spacing: -0.06em;
+  opacity: 0.6;
+}
+
+/* labels of the project in focus, 10px from the card on either side (agreed 2026-11-20):
+   the name's right edge 10px before the card's left edge (206), the tags 10px after its
+   right edge (1311). Only the focused project's labels show; v2.js fades them. */
+.proj-name,
+.proj-tags {
+  color: var(--void);
+  font-size: max(12px, 16 * var(--u));
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+}
+.motion .proj-name,
+.motion .proj-tags { opacity: 0; }
+.proj-name {
+  --y: 474;
+  left: calc(0.5 * (100% - var(--fw) * var(--u)) + 206 * var(--u) - 10px);
+  translate: -100% 0;
+  /* as wide as the room left of the card (10px from the screen edge): a long name
+     ("stahlbox x holypriest." on a tablet) wraps onto a second line instead of running off */
+  width: max-content;
+  max-width: calc(0.5 * (100% - var(--fw) * var(--u)) + 206 * var(--u) - 20px);
+  text-align: right;
+}
+.proj-tags {
+  --y: 471;
+  left: calc(0.5 * (100% - var(--fw) * var(--u)) + 1311 * var(--u) + 10px);
+  width: max(7em, 109 * var(--u));
+}
+
+/* ---- statement (Figma 102:6) ----
+   Placed at their Figma spots; v2.js starts them below the screen and brings them up.
+   The video runs off the bottom edge, so it keeps its distance from the bottom (and from
+   the left, 24). Only the paragraph flips colour, as in Figma. */
+.st-help,
+.st-big,
+.st-copy,
+.st-video {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+  font-weight: 400;
+}
+.st-help {
+  --x: 758; --y: 114;
+  translate: -50% 0;
+  font-size: max(14px, 24 * var(--u));
+  color: var(--void);
+  white-space: nowrap;
+}
+.st-big {
+  --x: 201; --y: 226;
+  font-size: calc(128 * var(--u));
+  color: var(--void);
+  white-space: nowrap;
+}
+.st-video {                            /* stand-in until the statement video arrives */
+  --x: 24; --y: 753;
+  --ax: 0; --ay: 1;
+  width: calc(1001 * var(--u));
+  height: calc(279 * var(--u));
+  display: grid;
+  place-items: center;
+  background: var(--void);
+}
+.st-copy {
+  --x: 928; --y: 667;
+  /* Figma's box is 491 wide but its balanced wrapping breaks the lines shorter. Measured in
+     the browser: any width from 375 to 387 gives Figma's exact five lines; 381 is the middle. */
+  width: calc(381 * var(--u));
+  font-size: max(14px, 24 * var(--u));
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.st-video { overflow: hidden; }
+.st-shade {                            /* the overlay of Figma 138:211: black at 70% (measured
+                                          from Figma's render: white paper 245 -> 74) */
+  position: absolute;
+  inset: 0;
+  background: var(--void);
+  opacity: 0;
+}
+
+/* ---- statistics (Figma 138:211) ----
+   Inside the video box, which clips them: they never show outside the video. When they
+   appear the video fills the screen, so the box is the screen and these are screen spots.
+   Centred on their Figma x (translate -50%). "36" and its label run off the top-left
+   corner, so they keep their distance from the top-left; "10+" and its label from the
+   bottom-right; "5546" from the centre. White with the colour flip, like Figma. */
+.stat {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  translate: -50% 0;
+  color: #fff;
+  mix-blend-mode: difference;
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.motion .stat { opacity: 0; }
+.stat-n { font-size: calc(335 * var(--u)); }
+.stat-l { font-size: max(12px, 20 * var(--u)); }
+.stat-1  { --x: 158.5;  --y: -65; --ax: 0; --ay: 0; }
+.stat-1l { --x: 137.5;  --y: 110; --ax: 0; --ay: 0; }
+.stat-2  { --x: 756;    --y: 298; }
+.stat-2l { --x: 744.5;  --y: 498; }
+.stat-3  { --x: 1272.5; --y: 683; --ax: 1; --ay: 1; }
+.stat-3l { --x: 1272.5; --y: 864; --ax: 1; --ay: 1; }
+
+/* ---- about (Figma 140:391) ----
+   The services list sits in the top-left corner, the photo runs off the bottom edge; the
+   paragraph and "about" keep their place from the centre. The list and paragraph flip
+   colour like Figma; "about" is plain black. v2.js brings it all up from below. */
+.ab-list,
+.ab-text,
+.ab-photo,
+.ab-about {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  letter-spacing: -0.06em;
+  font-weight: 400;
+}
+.ab-list {
+  --x: 21; --y: 16;
+  --ax: 0; --ay: 0;
+  list-style: none;
+  font-size: max(12px, 24 * var(--u));
+  line-height: 1;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+.ab-text {
+  --x: 391; --y: 75;
+  width: calc(992 * var(--u));
+  font-size: calc(64 * var(--u));
+  line-height: 1.15;
+  color: #fff;
+  mix-blend-mode: difference;
+}
+.ab-photo {
+  --x: 205; --y: 937;                 /* partner 1; the others follow 385 apart below it */
+  --ay: 1;
+  width: calc(361 * var(--u));
+  height: calc(359 * var(--u));
+  object-fit: cover;
+  object-position: top;             /* Figma shows the top of the head above the bottom edge */
+}
+.ab-about {
+  --x: 1132; --y: 890;
+  font-size: calc(64 * var(--u));
+  line-height: 1.15;
+  color: var(--void);
+  text-decoration: underline;
+  text-decoration-thickness: 0.035em;
+  text-underline-position: from-font;
+}
+
+/* ---- call to action (Figma 154:602) ----
+   Figma's frame is 1085 tall with everything centred, so its numbers are moved up 51.5 to
+   centre in the 982 frame: video 815 x 524 at 348.5 / 229.5; "(click me)" baseline at 561,
+   "to get started." baseline at 399 (line-height 1, Arial: line top = baseline - 0.847 em). */
+.cta-video,
+.cta-sub,
+.cta-click {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+}
+.cta-video {
+  --x: 348.5; --y: 229.5;
+  width: calc(815 * var(--u));
+  height: calc(524 * var(--u));
+  display: block;
+}
+.cta-video video { width: 100%; height: 100%; object-fit: cover; display: block; }.cta-sub,
+.cta-click {
+  --x: 756;
+  translate: -50% 0;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.cta-click { --y: 385.7; font-size: calc(207 * var(--u)); }   /* 561 - 0.847 x 207 */
+.cta-sub   { --y: 358.3; font-size: max(16px, 48 * var(--u)); } /* 399 - 0.847 x 48 */
+
+html:not(.motion) .cta-video { --y: 11200; }
+html:not(.motion) .cta-click { --y: 11356; }
+html:not(.motion) .cta-sub   { --y: 11329; }
+
+/* ---- process step "examine." (Figma 4:2) ----
+   Placed at Figma frame 4:2. v2.js then scales and moves them (transform, origin top-left)
+   to the end layout of the sketch sent on 2026-11-20. Text baseline for line-height 1 in
+   Arial: line top = baseline - 0.8465 em. */
+.ex-box,
+.ex-word,
+.ex-copy {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  transform-origin: 0 0;
+  letter-spacing: -0.06em;
+  font-weight: 400;
+}
+.ex-box {
+  --x: 390; --y: 378;
+  width: calc(732 * var(--u));
+  height: calc(725 * var(--u));
+  display: grid;
+  place-items: center;
+  background: var(--void);
+}
+.ex-word {                            /* centred at x -13 in Figma: 740 wide, so left -383;
+                                         baseline 320.8, so top 320.8 - 175.2 */
+  --x: -383; --y: 145.6;
+  font-size: calc(207 * var(--u));
+  line-height: 1;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+.ex-copy {
+  --x: 954; --y: 62;
+  width: calc(349 * var(--u));
+  font-size: max(12px, 24 * var(--u));
+  line-height: 1.15;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  white-space: nowrap;                /* the lines are broken by hand, as in Figma */
+}
+/* ---- the next steps (Figma 8:137): built straight in the end layout of "examine."
+   (second sketch): video 872 x 864 centred at 320 / 59, word 240 px at left 102 (top 48.8),
+   paragraph at 1007 / 655 at 1.2 x 24 px. v2.js slides and fades them in and out. */
+/* "services" (Figma 8:137, node 188:347): 64 px, underlined, 108 left of the video and centred
+   on its height. Placed relative to the video, scaled with it (872 / 732 = 1.191) into the
+   end layout: left 320 - 108 x 1.191, top 59 + 326 x 1.191. v2.js slides it in from the left. */
+.ex-services {
+  --x: 191.4; --y: 447.3;
+  font-size: calc(76.2 * var(--u));
+  line-height: normal;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-thickness: 3.5%;
+  text-underline-position: from-font;
+}
+.pb, .pw, .pc, .ex-services {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  letter-spacing: -0.06em;
+  font-weight: 400;
+}
+.pb {
+  --x: 320; --y: 59;
+  width: calc(872 * var(--u));
+  height: calc(864 * var(--u));
+  display: grid;
+  place-items: center;
+  background: var(--void);
+}
+.motion .pb { opacity: 0; }
+.pw {
+  --x: 102; --y: 48.8;
+  font-size: calc(240 * var(--u));
+  line-height: 1;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+.pc {
+  --x: 1007; --y: 655;
+  width: calc(419 * var(--u));         /* Figma's 349 x 1.2 */
+  font-size: max(12px, 28.8 * var(--u));
+  line-height: 1.15;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+  text-wrap: balance;
+}
+html:not(.motion) .pb-2 { --y: 14000; } html:not(.motion) .pw-2 { --y: 13900; } html:not(.motion) .pc-2 { --y: 14600; }
+html:not(.motion) .pb-3 { --y: 15000; } html:not(.motion) .pw-3 { --y: 14900; } html:not(.motion) .pc-3 { --y: 15600; }
+html:not(.motion) .pb-4 { --y: 16000; } html:not(.motion) .pw-4 { --y: 15900; } html:not(.motion) .pc-4 { --y: 16600; }
+
+/* ---- locations (Figma 186:285) ----
+   The globe's sphere in Figma: about 1518 across, left edge 266, top 361 (centre 1025 / 1120).
+   --gs is the canvas size; cobe draws the sphere a little inside its canvas, so the canvas
+   is sized from a measurement of the drawn sphere (see the note in the report). */
+.loc-globe,
+.loc-word,
+.loc-place {
+  --ax: 0.5;
+  --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  letter-spacing: -0.06em;
+  font-weight: 400;
+}
+/* edges (2026-11-20, seen on a wide 1896 x 940 window): the globe and "locations." run off the
+   right edge in Figma, so they keep their distance from the right; the labels and the info
+   block sit at the left edge, so they keep theirs from the left */
+.loc-globe,
+.loc-word { --ax: 1; }
+.loc-place,
+.loc-info { --ax: 0; }
+.loc-globe {
+  --gs: 2300;                         /* 2000 matched Figma (cobe's sphere spans ~76% of its
+                                         canvas); scaled up 15% (agreed 2026-11-20), same centre */
+  --x: calc(1025 - var(--gs) / 2);
+  --y: calc(1120 - var(--gs) / 2);
+  width: calc(var(--gs) * var(--u));
+  height: calc(var(--gs) * var(--u));
+}
+.loc-globe canvas {
+  width: 100%; height: 100%; display: block; cursor: grab;
+  touch-action: pan-y;                /* touch: vertical swipes still scroll the page */
+}
+.loc-globe canvas:active { cursor: grabbing; }
+.loc-word {                           /* updated Figma: baseline 278.8 (leading-20 line at 197),
+                                         level with the labels: top 278.8 - 175.2 */
+  --x: 749; --y: 103.6;
+  font-size: calc(207 * var(--u));
+  line-height: 1;
+  color: #fff;
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+.loc-place {
+  --y: 249;
+  font-size: max(14px, 32 * var(--u));
+  line-height: 1.15;
+  color: #fff;
+  mix-blend-mode: difference;
+  white-space: nowrap;
+  /* buttons that look like the Figma text */
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.loc-place:hover,
+.loc-place[aria-pressed="true"] { text-decoration: underline; text-decoration-thickness: 0.06em; }
+.loc-place:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.loc-info {                           /* updated Figma: 20 px, three lines at 20 / 454 */
+  --ax: 0; --ay: 0.5;
+  --x: 20; --y: 454;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  font-size: max(12px, 20 * var(--u));
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+  color: #fff;
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+.loc-info { transition: opacity 0.2s ease; }      /* globe.js fades it while swapping location */
+.loc-info.is-swapping { opacity: 0; }
+.loc-info a { color: inherit; text-decoration: none; }
+.loc-info a:hover { text-decoration: underline; }
+html:not(.motion) .loc-info { --y: 17300; }
+.loc-remote { --x: 18; }
+.loc-nbo    { --x: 203; }
+.loc-cgn    { --x: 389; }
+/* Figma 49:163: the hero video again, full screen (same crop as the hero). v2.js raises it in. */
+.end-video {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  object-fit: cover;
+  object-position: 50% 50%;
+  /* catches clicks once it covers the locations, so the hidden buttons can't be hit through it */
+}
+html:not(.motion) .end-video { top: calc(17600 * var(--u)); }
+/* Figma 49:208: the platinum page behind the shrinking video. It rises with the video, so the
+   locations under it never show again once the video has covered them. */
+.end-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  background: var(--platinum);
+}
+html:not(.motion) .end-bg { display: none; }
+/* Figma 49:294: "freigeistagency™", 207 px, centred on the page. Its baseline sits 60.8 below
+   the screen's middle (0.294 em), so the line top (line-height 1) is 0.8465 - 0.294 = 0.5525 em
+   above the middle. v2.js raises it in from below. */
+.foot-word {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: calc(50% - 0.5525em);
+  margin: 0;
+  font-size: calc(207 * var(--u));
+  line-height: 1;
+  letter-spacing: -0.06em;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+}
+html:not(.motion) .foot-word { top: calc(17700 * var(--u)); }
+/* Figma 49:282, the final footer: 24 px black, centred in 491-wide boxes. Columns centred at
+   255.5 / 755.5 / 1256.5 with their tops at 697; the email's line ends at 282. */
+.foot-mail, .foot-col {
+  --ax: 0.5; --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  width: calc(491 * var(--u));
+  margin: 0;
+  font-size: max(12px, 24 * var(--u));
+  line-height: normal;
+  letter-spacing: -0.06em;
+  text-align: center;
+  color: var(--void);
+  text-decoration: none;
+}
+.foot-col a { display: block; color: inherit; text-decoration: none; }
+.foot-mail:hover, .foot-col a[href]:hover { text-decoration: underline; }
+.foot-mail  { --x: 510; --y: 254.4; }      /* line top: 282 minus one 24 px "normal" line */
+.foot-col   { --y: 697; }
+.foot-col-1 { --x: 10; }
+.foot-col-2 { --x: 510; }
+.foot-col-3 { --x: 1011; }
+.motion .foot-mail, .motion .foot-col { opacity: 0; }   /* v2.js fades them in */
+html:not(.motion) .foot-mail { --y: 17600; }
+html:not(.motion) .foot-col  { --y: 17900; }
+html:not(.motion) .loc-globe { --y: 17200; }
+html:not(.motion) .loc-word  { --y: 16900; }
+html:not(.motion) .loc-place { --y: 17100; }
+
+html:not(.motion) .ex-box  { --y: 12800; }
+html:not(.motion) .ex-word { --y: 12600; --x: 20; }
+html:not(.motion) .ex-copy { --y: 13600; }
+html:not(.motion) .ex-services { --y: 13300; }
+
+/* caption next to the photo's top (Figma 140:401); on the left edge like the services list,
+   kept level with the photo's top, so it uses the photo's bottom anchor too */
+.ab-cap {
+  --x: 21; --y: 607;
+  --ax: 0; --ay: 1;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  font-size: max(12px, 16 * var(--u));
+  letter-spacing: -0.06em;
+  line-height: 1.15;
+  color: var(--void);
+  white-space: nowrap;
+}
+.motion .ab-cap { opacity: 0; }
+.ab-photo-2 { --y: 1322; }
+.ab-photo-3 { --y: 1707; }
+.ab-photo-4 { --y: 2092; }
+html:not(.motion) .ab-cap { --y: 9400; --ay: 0.5; }
+/* tablets (768-1023): the caption at the lower photo's bottom right (2026-11-20), 10 right of
+   the photo (205 + 361 + 10, centred like the photo) with its line's bottom level with the
+   photo's bottom (607 + 359). Phones have their own spot in the phone block below. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .motion .ab-cap { --ax: 0.5; --x: 576; top: calc(var(--ay) * (100svh - 982 * var(--u)) + 966 * var(--u) - 1.15em); }
+}
+
+html:not(.motion) .ab-list  { --y: 8500; --ay: 0.5; }
+html:not(.motion) .ab-text  { --y: 8559; }
+html:not(.motion) .ab-photo { --y: 9421; --ay: 0.5; }
+html:not(.motion) .ab-photo-2 { --y: 9806; }
+html:not(.motion) .ab-photo-3 { --y: 10191; }
+html:not(.motion) .ab-photo-4 { --y: 10576; }
+html:not(.motion) .ab-about { --y: 9374; }
+
+/* without the script: the statistics simply stack inside the video box */
+html:not(.motion) .st-video { height: auto; padding: calc(40 * var(--u)) 0; gap: calc(10 * var(--u)); }
+html:not(.motion) .stat { position: static; translate: none; }
+html:not(.motion) .stat-n { font-size: calc(160 * var(--u)); }
+
+html:not(.motion) .st-help  { --y: 6300; }
+html:not(.motion) .st-big   { --y: 6412; }
+html:not(.motion) .st-copy  { --y: 6853; }
+html:not(.motion) .st-video { --y: 6939; --ay: 0.5; }
+
+/* without the script (or with reduced motion): the cards simply stack down the page */
+html:not(.motion) .work { position: static; }
+html:not(.motion) .featured { --y: 2200; }
+html:not(.motion) .proj { --y: calc(2000 + 700 * var(--i)); }
+html:not(.motion) .proj-name { --y: calc(2306 + 700 * var(--i)); }
+html:not(.motion) .proj-tags { --y: calc(2303 + 700 * var(--i)); }
+html:not(.motion) .we-word { --y: 1100; }
+html:not(.motion) .we-list { --y: 1245; }
+html:not(.motion) .portfolio { --y: 1700; }
+
+/* ---- phone layout: positions on the 820-wide virtual canvas ---- */
+@media (max-width: 767px) {
+  .logo-block { width: calc(400 * var(--u)); }
+  .scroll-hint { --x: 440; --y: 120; }
+  .wm-geist   { --x: 330; --y: 300; }
+  .wm-agency  { --x: 10;  --y: 470; }
+  .wm-tagline { --x: 330; --y: 720; }
+  .wm-frei    { --x: 570; --y: 778; }   /* bottom edge, as on desktop */
+  /* group centred on the 820 canvas (410 - 361.5), moved 9 left because the list's 16px
+     minimum text size makes it wider on phones (measured 4px off-centre at 375) */
+  .we-word    { --x: 40; }
+  .we-list    { --x: 585; }
+  .portfolio  { --x: 410; }
+
+  /* projects: the card fits the 820 canvas (same proportions as Figma, 780 x 453); there is
+     no room beside it, so the labels sit just under it, left and right (strips start at 700,
+     set in v2.js) */
+  .proj      { --x: 20; --y: 168; width: calc(780 * var(--u)); height: calc(453 * var(--u)); }
+  .proj-name { --y: 640; left: calc(20 * var(--u)); translate: none; max-width: calc(560 * var(--u)); text-align: left; }
+  .proj-tags { --y: 640; left: calc(600 * var(--u)); width: calc(200 * var(--u)); text-align: right; }
+
+  /* statement: the big lines are too wide for the 820 canvas at 128, so 100 (each line then
+     fits); paragraph on the right under it; video across the width along the bottom */
+  .st-help  { --x: 410; }
+  .st-big   { --x: 20; font-size: calc(100 * var(--u)); }
+  .st-copy  { --x: 330; --y: 600; width: calc(470 * var(--u)); }
+  .st-video { --x: 20; --y: 860; width: calc(780 * var(--u)); height: calc(218 * var(--u)); }
+
+  /* statistics on the 820 canvas: same distances from their corner / the centre as desktop */
+  .stat-2  { --x: 410; }
+  .stat-2l { --x: 398.5; }
+  .stat-3  { --x: 580.5; }
+  .stat-3l { --x: 580.5; }
+
+  /* about: the paragraph is too wide for the 820 canvas, so it starts at 20 and wraps in 780 */
+  .ab-text  { --x: 20; --y: 230; width: calc(780 * var(--u)); }
+  .ab-photo { --x: 20; }
+  .ab-about { --x: 600; }
+  /* the caption at the lower photo's bottom right (2026-11-20): 10 right of the photo
+     (20 + 361 + 10) with its line's bottom level with the photo's bottom (607 + 359) */
+  .ab-cap   { --x: 391; top: calc(var(--ay) * (100svh - 982 * var(--u)) + 966 * var(--u) - 1.15em); }
+
+  /* call to action: video across the canvas (same shape), "(click me)" smaller so it fits */
+  .cta-video { --x: 20; --y: 240; width: calc(780 * var(--u)); height: calc(502 * var(--u)); }
+  .cta-sub, .cta-click { --x: 410; }
+  .cta-click { --y: 418; font-size: calc(150 * var(--u)); }
+  .cta-sub   { --y: 370; }
+
+  /* examine: the box centred on the 820 canvas, the paragraph at the right edge */
+  .ex-box  { --x: 44; }
+  .ex-copy { --x: 450; }
+  /* the next steps in the phone end layout of "examine." */
+  .pb { --x: 20; --y: 104.7; width: calc(780 * var(--u)); height: calc(772.6 * var(--u)); }
+  .pw { --x: 20; --y: 83.3; font-size: calc(207 * var(--u)); }
+  /* the video starts at the canvas edge here, so "services" sits at the left margin over it,
+     still centred on its height (scale 780 / 732 = 1.066) */
+  .ex-services { --x: 20; --y: 452.1; font-size: calc(68.2 * var(--u)); }
+  .pc { --x: 450; --y: 696.8; width: calc(349 * var(--u)); font-size: max(12px, 24 * var(--u)); }
+  /* locations: "locations." would start past the screen's middle, so it moves to the left
+     edge with the labels under it; the globe stays big, rising from the bottom */
+  .loc-word  { --x: 20; --y: 60; }
+  /* footer: the name shrinks to fit the 780 between the margins (Figma width 1388 at 207 px);
+     the three columns sit side by side, 260 wide, centred at 140 / 410 / 680 */
+  .foot-word  { font-size: calc(116 * var(--u)); }
+  .foot-col   { width: calc(260 * var(--u)); }
+  .foot-col-1 { --x: 10; }
+  .foot-col-2 { --x: 280; }
+  .foot-col-3 { --x: 550; }
+  .foot-mail  { --x: 164.5; }
+  .loc-place { --y: 300; }
+  .loc-remote { --x: 20; }
+  .loc-nbo    { --x: 220; }
+  .loc-cgn    { --x: 380; }
+  .loc-info   { --y: 370; }
+  .loc-globe  { --gs: 1840; --x: calc(600 - var(--gs) / 2); --y: calc(1150 - var(--gs) / 2); }  /* 1600 + 15% */
+}
+
+/* paragraph line reveal (v2.js, ported from mtm-coiffure): the words are split into inline
+   blocks so each line can rise and fade as one; a hidden copy is read by screen readers */
+.wr-word { display: inline-block; }
+.wr-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- the menu (Figma 1:3): a black panel 461 high. It comes down from the top and pushes the
+   whole page down by its height (the stage moves, so the page stays where it was scrolled).
+   Items near an edge in Figma keep their distance from that edge; the slider and the email
+   stay centred. menu.js builds the previews and moves them. ---- */
+:root { --menu-h: calc(461 * var(--u)); --menu-ease: cubic-bezier(0.76, 0, 0.24, 1); --menu-time: 0.9s; }
+.stage { transition: transform var(--menu-time) var(--menu-ease); }
+html.menu-open .stage { transform: translateY(var(--menu-h)); }
+.menu {
+  position: fixed;
+  left: 0; top: 0;
+  width: 100%;
+  height: var(--menu-h);
+  z-index: 20;
+  overflow: hidden;
+  background: var(--void);
+  color: #fff;
+  letter-spacing: -0.06em;
+  transform: translateY(-100%);
+  transition: transform var(--menu-time) var(--menu-ease);
+}
+html.menu-open .menu { transform: translateY(0); }
+.menu > * { position: absolute; margin: 0; }
+.menu a, .menu button { color: inherit; text-decoration: none; }
+.menu button { font: inherit; letter-spacing: inherit; background: none; border: 0; cursor: pointer; }
+.menu a[href]:hover { text-decoration: underline; }
+.m-loc    { left: calc(20 * var(--u)); top: calc(18 * var(--u)); font-size: max(12px, 20 * var(--u)); line-height: normal; }
+.m-mail   { left: 50%; top: calc(18 * var(--u)); transform: translateX(-50%); font-size: max(12px, 20 * var(--u)); line-height: normal; white-space: nowrap; }
+.m-social { right: calc(20 * var(--u)); top: calc(14 * var(--u)); font-size: max(12px, 24 * var(--u)); line-height: normal; text-align: right; }
+/* the page name sits on the same baseline as "menu." and "exit." (2026-11-20): Arial's baseline is
+   0.92 em below its line top at line-height normal, so top = 323 + 0.92 x (128 - its own size) */
+.m-name   { left: 50%; top: calc(var(--menu-h) - 138 * var(--u) + 0.92 * (128 * var(--u) - max(12px, 20 * var(--u)))); transform: translateX(-50%); font-size: max(12px, 20 * var(--u)); line-height: normal; white-space: nowrap; }
+/* the bottom row keeps Figma's distance from the panel's bottom (461 - 323 = 138), so it stays at the
+   bottom when the panel is taller (phones) */
+.menu .m-word, .menu .m-exit { top: calc(var(--menu-h) - 138 * var(--u)); font-size: calc(128 * var(--u)); line-height: normal; white-space: nowrap; padding: 0; }
+.m-word   { left: calc(12 * var(--u)); }
+.menu .m-exit { right: calc(9 * var(--u)); }
+/* the slider fills the panel's width; menu.js places each preview (a 360 x 211 box, scaled) */
+.m-slider { left: 0; top: 0; width: 100%; height: 100%; }
+.menu .m-card {
+  position: absolute;
+  left: 0; top: 0;
+  width: calc(360 * var(--u));
+  height: calc(211 * var(--u));
+  transform-origin: 50% 50%;
+  background: #d9d9d9;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  will-change: transform;
+}
+.m-card:focus-visible { outline: 2px solid var(--sunbeam); outline-offset: 2px; }
+
+/* navbar right (Figma 63:394): "de" and "menu", 24 px underlined, flipping colour over the
+   page. Their left edges sit 108 and 65 in from the right edge of the frame (1404 / 1447 of 1512),
+   top 11; they keep that distance from the right edge on every screen. */
+.menu-btn, .nav-de {
+  position: fixed;
+  top: calc(11 * var(--u));
+  z-index: 10;
+  font: inherit;
+  font-size: max(12px, 24 * var(--u));
+  letter-spacing: -0.06em;
+  line-height: normal;
+  color: #fff;
+  text-decoration: underline;
+  text-underline-position: from-font;
+  mix-blend-mode: difference;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.menu-btn { left: calc(100% - 65 * var(--u)); }
+.nav-de   { left: calc(100% - 108 * var(--u)); }
+.menu-btn:focus-visible, .nav-de:focus-visible, .m-exit:focus-visible { outline: 2px solid var(--sunbeam); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  :root { --menu-time: 0s; }
+}
+/* phones: the menu takes half the screen's height (2026-11-20; svh = the height with the browser bar
+   showing, so it is a steady half) */
+@media (max-width: 767px) {
+  :root { --menu-h: 50svh; }
+}
+
+/* the process steps' videos fill their boxes (square video, nearly square boxes) */
+.ex-box .step-video, .pb .step-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ex-box, .pb { overflow: hidden; }
+
+/* the featured projects' videos fill their cards (2026-11-20); the card shapes change as they
+   move, and the video keeps covering it */
+.proj { overflow: hidden; }
+.proj-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* the statement video (juma kaffee, from the live site; 2026-11-20) fills its box as the box
+   grows, under the overlay and the statistics */
+.st-video .st-vid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- the loader (Figma 73:766 / 191:363): black, the Sunbeam icon 1434 square at 125 / 204 blurred
+   25, the count in Arial Black 20 at 17 / 456. loader.js brightens the icon (29% -> 100%) as the
+   count goes 0 -> 100, then fades the loader out to the hero. If loader.js never runs, the CSS
+   animation below takes it away after 6 s so the page is never stuck behind it. ---- */
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  background: var(--void);
+  animation: loader-failsafe 0.6s ease 6s forwards;
+}
+@keyframes loader-failsafe { to { opacity: 0; visibility: hidden; } }
+.loader.is-running { animation: none; }
+.loader.is-done { opacity: 0; visibility: hidden; transition: opacity 0.9s ease, visibility 0s linear 0.9s; }
+.loader-icon, .loader-count {
+  --ax: 0.5; --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  margin: 0;
+}
+.loader-icon {
+  --x: 125; --y: 204;
+  width: calc(1434 * var(--u));
+  height: calc(1434 * var(--u));
+  max-width: none;
+  filter: blur(calc(25 * var(--u)));
+  /* room for the blur glow on every side (an inset of 0 would slice the glow flat where the icon
+     touches its box, as at its top point); loader.js trims only its bottom as it lands in the logo */
+  clip-path: inset(-5% -5% -5% -5%);
+  opacity: 0.29;
+}
+.loader-count {
+  --x: 17; --y: 456;
+  --ax: 0;                                     /* on the left edge */
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-weight: 900;
+  font-size: max(12px, 20 * var(--u));
+  letter-spacing: -0.06em;
+  line-height: normal;
+  color: #fff;
+  mix-blend-mode: difference;
+  font-variant-numeric: tabular-nums;
+}
+/* phones: the icon is far wider than the screen, so its middle (the eyes) is centred instead */
+@media (max-width: 767px) {
+  .loader-icon { --x: -307; }
+}
