@@ -72,6 +72,9 @@ html:not(.motion) .loc-mode { top: calc(17500 * var(--u)); }
   mix-blend-mode: difference;
 }
 html.cz-open .cz-globe, html.cz-open .cz-dots { display: block; }
+/* FRED.'s glowing eyes (remote): real colour, no flip, above the dots */
+.cz-eyes { display: none; position: fixed; inset: 0; width: 100%; height: 100%; z-index: 18; pointer-events: none; }
+html.cz-remote .cz-eyes { display: block; }
 .cz-globe {
   left: 50%;
   top: 50%;
@@ -84,3 +87,5 @@ html.cz-open .cz-globe, html.cz-open .cz-dots { display: block; }
 html.cz-open { overflow: hidden; }
 html.cz-open .menu-btn, html.cz-open .nav-de, html.cz-open .loc-place, html.cz-open .loc-mode { pointer-events: none; }
 .loc-globe canvas.is-near { cursor: pointer; }
+/* remote's solar system: the labels and the switch stay usable (nbo / cgn zoom back in from there) */
+html.cz-remote .loc-place, html.cz-remote .loc-mode { pointer-events: auto; }
