@@ -72,6 +72,9 @@ html:not(.motion) .loc-mode { top: calc(17500 * var(--u)); }
   mix-blend-mode: difference;
 }
 html.cz-open .cz-globe, html.cz-open .cz-dots { display: block; }
+/* FRED.'s glowing eyes (remote): real colour, no flip, above the dots */
+.cz-eyes { display: none; position: fixed; inset: 0; width: 100%; height: 100%; z-index: 18; pointer-events: none; }
+html.cz-remote .cz-eyes { display: block; }
 .cz-globe {
   left: 50%;
   top: 50%;

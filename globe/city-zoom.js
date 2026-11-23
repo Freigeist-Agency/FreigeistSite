@@ -103,6 +103,9 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, fadeOutRemote,
   const dotsCanvas = document.querySelector('.cz-dots');
   if (!gsap || !pageCanvas || !mount || !globeCanvas || !dotsCanvas) return null;
   const ctx = dotsCanvas.getContext('2d');
+  // FRED.'s eyes glow in real colour, so they get their own canvas without the colour flip
+  const eyesCanvas = document.querySelector('.cz-eyes');
+  const eyesCtx = eyesCanvas ? eyesCanvas.getContext('2d') : null;
 
   // the one state the timeline animates; the zoom globe and the dots canvas draw from it.
   // ox / oy: where the sphere's centre sits, from the screen's centre (CSS px)
@@ -135,6 +138,10 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, fadeOutRemote,
     const k = Math.min(devicePixelRatio || 1, 2);
     dotsCanvas.width = Math.round(view.vw * k);
     dotsCanvas.height = Math.round(view.vh * k);
+    if (eyesCanvas) {
+      eyesCanvas.width = dotsCanvas.width;
+      eyesCanvas.height = dotsCanvas.height;
+    }
     solar.layout(view.vw, view.vh);
   }
   const isRemote = () => city === REMOTE;
@@ -209,7 +216,14 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, fadeOutRemote,
     const k = dotsCanvas.width / view.vw;
     ctx.setTransform(k, 0, 0, k, 0, 0);
     ctx.clearRect(0, 0, view.vw, view.vh);
-    if (isRemote()) { solar.draw(ctx, S, root.dataset.globeMode); return; }
+    if (eyesCtx) {
+      eyesCtx.setTransform(k, 0, 0, k, 0, 0);
+      eyesCtx.clearRect(0, 0, view.vw, view.vh);
+    }
+    if (isRemote()) {
+      solar.draw(ctx, S, { mode: root.dataset.globeMode, eyes: eyesCtx, time: isReduced() ? 0 : performance.now() / 1000 });
+      return;
+    }
     if (!city || !countries || (S.denseAlpha <= 0 && S.morph <= 0)) return;
     const data = countries[city];
     const step = ((data.bounds[2] - data.bounds[0]) / 70) * RAD * 0.4 * S.scale * view.side;
