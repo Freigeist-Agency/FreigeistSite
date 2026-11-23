@@ -77,7 +77,9 @@ function measure() {
 // ---- the globe ----
 // GPU load: cobe's shader runs for every pixel of a canvas as big as the longer screen side, so
 // it renders at full sharpness only while the whole globe shows. Zoomed in (dots big, picture
-// fading out) it drops to 1 pixel per CSS pixel, and on the work page it stops altogether.
+// fading out) it drops to 1 pixel per CSS pixel, and it stops whenever its canvas is invisible:
+// browsers can hold back the drawing of an invisible WebGL canvas and then run all of it at once
+// when it shows again, which froze the way back (and could reset the GPU).
 const MARKERS = Object.values(CITIES).map((location) => ({ location, size: 0.05 }));
 let globe = null;
 let globeDpr = 1;
@@ -108,7 +110,7 @@ function startGlobe() {
       state.height = globeCanvas.height;
     },
   });
-  if (root.dataset.state === 'work') globe.toggle(false);
+  if (S.globeAlpha <= 0) globe.toggle(false);
 }
 function setGlobeDpr(dpr) {
   if (!globe || dpr === globeDpr) return;
@@ -270,7 +272,6 @@ function build(name) {
     onUpdate: drawDots,
     onComplete: () => {
       root.dataset.state = 'work';
-      if (globe) globe.toggle(false);         // nothing of the globe shows on the work page
       titleEl.focus({ preventScroll: true });
     },
     onReverseComplete: () => {
@@ -309,7 +310,6 @@ function play(name, { push = true, instant = false } = {}) {
 function back() {
   if (!tl) return;
   root.dataset.state = 'moving';
-  if (globe) requestAnimationFrame(() => globe && globe.toggle(true));   // a frame later: toggle(true) renders at once
   if (reduced) tl.progress(0); else tl.reverse();
 }
 
@@ -355,6 +355,8 @@ watchContext(globeCanvas);
 gsap.ticker.add(() => {
   if (root.dataset.state === 'globe' && !reduced) S.phi += 0.003;
   setGlobeDpr(S.scale > view.baseScale * 1.5 ? 1 : view.dpr);
+  const show = S.globeAlpha > 0;              // draw only while the canvas can be seen
+  if (globe && show !== globe.shouldRender) globe.toggle(show);
 });
 
 addEventListener('resize', () => {
