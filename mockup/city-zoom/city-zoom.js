@@ -31,7 +31,7 @@ const TAU = Math.PI * 2;
 const MAX_DELAY = 0.45;                       // share of the morph over which the dots set off
 
 const root = document.querySelector('.cz');
-const globeCanvas = document.querySelector('.cz-globe');
+let globeCanvas = document.querySelector('.cz-globe');   // replaced if its WebGL context is lost
 const dotsCanvas = document.querySelector('.cz-dots');
 const ctx = dotsCanvas.getContext('2d');
 const work = document.querySelector('.cz-work');
@@ -75,14 +75,19 @@ function measure() {
 }
 
 // ---- the globe ----
+// GPU load: cobe's shader runs for every pixel of a canvas as big as the longer screen side, so
+// it renders at full sharpness only while the whole globe shows. Zoomed in (dots big, picture
+// fading out) it drops to 1 pixel per CSS pixel, and on the work page it stops altogether.
 const MARKERS = Object.values(CITIES).map((location) => ({ location, size: 0.05 }));
 let globe = null;
+let globeDpr = 1;
 function startGlobe() {
-  S.scale = view.baseScale;
+  if (root.dataset.state === 'globe') S.scale = view.baseScale;
+  globeDpr = view.dpr;
   globe = createGlobe(globeCanvas, {
-    devicePixelRatio: view.dpr,
-    width: view.side * view.dpr,
-    height: view.side * view.dpr,
+    devicePixelRatio: globeDpr,
+    width: view.side * globeDpr,
+    height: view.side * globeDpr,
     phi: S.phi,
     theta: S.theta,
     scale: S.scale,
@@ -103,6 +108,33 @@ function startGlobe() {
       state.height = globeCanvas.height;
     },
   });
+  if (root.dataset.state === 'work') globe.toggle(false);
+}
+function setGlobeDpr(dpr) {
+  if (!globe || dpr === globeDpr) return;
+  globeDpr = dpr;
+  globe.devicePixelRatio = dpr;
+  globe.resize();                             // phenomenon resizes the buffer; onRender follows it
+}
+// If the browser drops the WebGL context (a GPU reset), the old canvas can stay blank for good:
+// put a fresh canvas in its place and start the globe again on it.
+function watchContext(c) {
+  c.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault();
+    console.warn('city zoom: the globe lost its WebGL context; restarting it');
+    setTimeout(restartGlobe, 200);
+  });
+}
+function restartGlobe() {
+  try { if (globe) globe.destroy(); } catch (err) { /* the old context is gone already */ }
+  globe = null;
+  const fresh = globeCanvas.cloneNode(false);
+  fresh.style.opacity = String(S.globeAlpha);
+  globeCanvas.replaceWith(fresh);
+  globeCanvas = fresh;
+  bindGlobeInput(globeCanvas);
+  watchContext(globeCanvas);
+  startGlobe();
 }
 
 // ---- the dots ----
@@ -236,7 +268,11 @@ function build(name) {
     paused: true,
     defaults: { ease: 'none' },
     onUpdate: drawDots,
-    onComplete: () => { root.dataset.state = 'work'; titleEl.focus({ preventScroll: true }); },
+    onComplete: () => {
+      root.dataset.state = 'work';
+      if (globe) globe.toggle(false);         // nothing of the globe shows on the work page
+      titleEl.focus({ preventScroll: true });
+    },
     onReverseComplete: () => {
       root.dataset.state = 'globe';
       work.hidden = true;
@@ -273,6 +309,7 @@ function play(name, { push = true, instant = false } = {}) {
 function back() {
   if (!tl) return;
   root.dataset.state = 'moving';
+  if (globe) requestAnimationFrame(() => globe && globe.toggle(true));   // a frame later: toggle(true) renders at once
   if (reduced) tl.progress(0); else tl.reverse();
 }
 
@@ -301,22 +338,29 @@ function cityNear(x, y) {
   }
   return null;
 }
-globeCanvas.addEventListener('pointermove', (e) => {
-  globeCanvas.classList.toggle('is-near', root.dataset.state === 'globe' && !!cityNear(e.clientX, e.clientY));
-});
-globeCanvas.addEventListener('click', (e) => {
-  if (root.dataset.state !== 'globe') return;
-  const name = cityNear(e.clientX, e.clientY);
-  if (name) play(name);
-});
+function bindGlobeInput(c) {
+  c.addEventListener('pointermove', (e) => {
+    c.classList.toggle('is-near', root.dataset.state === 'globe' && !!cityNear(e.clientX, e.clientY));
+  });
+  c.addEventListener('click', (e) => {
+    if (root.dataset.state !== 'globe') return;
+    const name = cityNear(e.clientX, e.clientY);
+    if (name) play(name);
+  });
+}
+bindGlobeInput(globeCanvas);
+watchContext(globeCanvas);
 
 // the idle spin, only while the globe is showing
-gsap.ticker.add(() => { if (root.dataset.state === 'globe' && !reduced) S.phi += 0.003; });
+gsap.ticker.add(() => {
+  if (root.dataset.state === 'globe' && !reduced) S.phi += 0.003;
+  setGlobeDpr(S.scale > view.baseScale * 1.5 ? 1 : view.dpr);
+});
 
 addEventListener('resize', () => {
   measure();
   if (root.dataset.state === 'globe') S.scale = view.baseScale;
-  if (globe) globe.devicePixelRatio = view.dpr;
+  if (globe) { globeDpr = 0; setGlobeDpr(S.scale > view.baseScale * 1.5 ? 1 : view.dpr); }
   if (city && root.dataset.state === 'work') { buildWork(city); gsap.set([titleEl, '.cz-tile-media', '.cz-tile-name', '.cz-tile-tags', '.cz-back'], { opacity: 1 }); }
   drawDots();
 });
@@ -334,4 +378,4 @@ if (first && PROJECTS[first]) {                // opened from a shared link: sta
   history.replaceState({ cz: first, entry: true }, '', location.href);
   play(first, { push: false, instant: true });
 }
-window.CZ = { S, play, back, project, get tl() { return tl; } };   // for checking frames in a test browser
+window.CZ = { S, play, back, project, get tl() { return tl; }, get globe() { return globe; }, get canvas() { return globeCanvas; } };   // for checking frames in a test browser
