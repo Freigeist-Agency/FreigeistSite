@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Dense dot grids for countries, for the city zoom (mockup/city-zoom/country-dots.json).
+"""Dense dot grids for countries, for the city zoom (globe/country-dots.json).
 
 Input: Natural Earth country shapes as TopoJSON, from the world-atlas package (ISC):
     curl -sL https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-50m.json -o countries-50m.json
 Run:
-    python3 tools/country-dots.py countries-50m.json mockup/city-zoom/country-dots.json
+    python3 tools/country-dots.py countries-50m.json globe/country-dots.json
 
 Each country gets a staggered (hexagonal) grid of [lat, lon] points inside its outline, ROWS rows
 from its southern to its northern edge, so every country has about the same dot spacing on screen

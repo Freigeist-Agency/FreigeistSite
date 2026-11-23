@@ -8,6 +8,7 @@
   <link rel="icon" href="../images/favicon.png">
   <link rel="stylesheet" href="../v2/v2.css">
   <link rel="stylesheet" href="globe.css">
+  <link rel="stylesheet" href="../work/work.css">
 </head>
 <body>
   <!-- the loader (Figma 73:766 -> 191:363 -> the site): the blurred icon brightens from 29% to full as
@@ -183,14 +184,15 @@
     <!-- /globe: the same page as /v2 except this section. The globe is only its dots (no sphere),
          and "day" / "night" switch the section's background (globe.js, globe.css). "locations."
          sits behind the globe, so the dots run over its letters and show the globe is see-through;
-         the dots flip colour over whatever is under them, so they stay visible on the letters too. -->
+         the dots flip colour over whatever is under them, so they stay visible on the letters too.
+         "nbo" / "cgn", or a click on a city's dot, zoom into that city's work page (city-zoom.js). -->
     <div class="loc-bg" aria-hidden="true"></div>
     <h2 class="loc-word">locations.</h2>
     <div class="loc-globe"><canvas id="loc-canvas" style="opacity: 0; transition: opacity 1.5s ease;"></canvas></div>
     <!-- buttons: "nbo" / "cgn" turn the globe to that city's dot, "remote" lets it spin again -->
     <button type="button" class="loc-place loc-remote" aria-label="remote: let the globe spin">remote</button>
-    <button type="button" class="loc-place loc-nbo" aria-label="nbo: show Nairobi on the globe">nbo</button>
-    <button type="button" class="loc-place loc-cgn" aria-label="cgn: show Cologne on the globe">cgn</button>
+    <button type="button" class="loc-place loc-nbo" aria-label="nbo: zoom into Nairobi and our work there">nbo</button>
+    <button type="button" class="loc-place loc-cgn" aria-label="cgn: zoom into Cologne and our work there">cgn</button>
     <!-- day / night: one switch, two words; the chosen one is underlined like the place labels -->
     <button type="button" class="loc-mode" role="switch" aria-checked="false" aria-label="night mode for the globe"><span class="lm-day">day</span> <span class="lm-night">night</span></button>
     <!-- updated Figma 186:285: the lines show the chosen location's details; globe.js swaps them
@@ -224,6 +226,13 @@
     <svg class="logo-block" viewBox="0 0 491 208" preserveAspectRatio="none" role="img" aria-label="freigeist"><path fill="#fff" d="M491 208H448.104L441.155 134.898L441.038 133.659L440.148 132.817L409.156 103.453L407.622 102L405.464 102.531L334.31 120.054L332.509 120.497L331.418 122.361L281.288 208H0V0H491V208ZM435.134 136.571C435.397 143.294 436.674 175.895 437.933 208H303.137L338.59 128.284C342.442 127.288 401.727 111.961 405.418 111.007C408.339 113.52 433.424 135.101 435.134 136.571ZM401.146 186.235L424.997 176.767V158.743L401.146 186.235ZM351.983 169.43L389.901 185.004L358.173 147.415L351.983 169.43Z"/></svg>
   </main>
   <div class="scroll-space" aria-hidden="true"></div>
+
+  <!-- the city zoom (city-zoom.js): picking "nbo" / "cgn" or a city's dot swaps the globe above
+       for this full-screen copy, which zooms into the country; its dots then stream into the
+       city's work page, read from /work/<city> and shown here. Empty until a city is picked. -->
+  <canvas class="cz-globe" aria-hidden="true"></canvas>
+  <div class="cz-mount"></div>
+  <canvas class="cz-dots" aria-hidden="true"></canvas>
 
   <script src="../js/vendor/gsap/3.15.0/gsap.min.js"></script>
   <script src="../js/vendor/gsap/3.15.0/ScrollTrigger.min.js"></script>

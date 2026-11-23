@@ -371,7 +371,7 @@ addEventListener('resize', () => {
 measure();
 startGlobe();
 try {
-  countries = await (await fetch('country-dots.json')).json();
+  countries = await (await fetch('../../globe/country-dots.json')).json();
 } catch (err) {
   console.error('city zoom: could not load the country dots', err);
 }

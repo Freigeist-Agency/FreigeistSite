@@ -4,13 +4,34 @@
 // markers transparent, so the section's background and "locations." (behind the globe) show
 // through. The dots are white and the globe flips colour (globe.css), so they come out black on
 // the day background, white on the night one, and inverted over the letters. "day" / "night"
-// only switch the background.
+// only switch the background. Picking "nbo" / "cgn", or clicking a city's dot, plays the city
+// zoom into that city's work page (city-zoom.js).
 import createGlobe from '../js/vendor/cobe/0.6.3-dots/cobe.esm.js';
+import { createCityZoom, CITIES } from './city-zoom.js';
 const canvas = document.getElementById("loc-canvas");
 if (canvas) {
-  const NAIROBI = [-1.2921, 36.8219], COLOGNE = [50.9375, 6.9603];
+  const NAIROBI = CITIES.nairobi, COLOGNE = CITIES.cologne;
   const root = document.documentElement;
+  const MODE_KEY = 'freigeist-globe-mode';         // the work pages read it too (this tab only)
   let mode = 'day';
+  try { const saved = sessionStorage.getItem(MODE_KEY); if (saved === 'day' || saved === 'night') mode = saved; } catch (e) { /* storage blocked: day */ }
+  // the look both globes share (this one and the city zoom's), so the hand-over is seamless
+  const LOOK = {
+    // the dots-only build draws no sphere or glow, so dark and glowColor have no effect
+    dark: 0,
+    diffuse: 1.2,
+    mapSamples: 16000,
+    mapBrightness: 6,
+    // must be a number: left out, the shader gets NaN and some GPUs then draw no dots at all
+    mapBaseBrightness: 0,
+    baseColor: [1, 1, 1],
+    markerColor: [1, 1, 1],
+    glowColor: [0, 0, 0],
+    markers: [
+      { location: NAIROBI, size: 0.08 },
+      { location: COLOGNE, size: 0.08 }
+    ],
+  };
   // cobe's angles that bring a [latitude, longitude] to the front (from cobe's own examples)
   const anglesFor = ([lat, lon]) => [Math.PI - ((lon * Math.PI) / 180 - Math.PI / 2), (lat * Math.PI) / 180];
   const TILT = 1.3;                                   // up/down limit, so it never flips over a pole
@@ -20,6 +41,8 @@ if (canvas) {
   let focus = null;                                   // [phi, theta] the globe is turning towards
   let hasFadedIn = false;
   let currentGlobe = null;
+  let held = false;                                   // the city zoom has taken over
+  let inView = false;
   let currentWidth = canvas.offsetWidth;
   const capDpr = () => Math.min(window.devicePixelRatio || 1, 2, 2048 / Math.max(canvas.offsetWidth, 1));
   const isReducedMotion = () => {
@@ -45,20 +68,7 @@ if (canvas) {
         height: internalResolution,
         phi: 0,
         theta: 0.15,
-        // the dots-only build draws no sphere or glow, so dark and glowColor have no effect
-        dark: 0,
-        diffuse: 1.2,
-        mapSamples: 16000,
-        mapBrightness: 6,
-        // must be a number: left out, the shader gets NaN and some GPUs then draw no dots at all
-        mapBaseBrightness: 0,
-        baseColor: [1, 1, 1],
-        markerColor: [1, 1, 1],
-        glowColor: [0, 0, 0],
-        markers: [
-          { location: [-1.2921, 36.8219], size: 0.08 }, // Nairobi
-          { location: [50.9375, 6.9603], size: 0.08 }   // Cologne
-        ],
+        ...LOOK,
         onRender: (state) => {
           if (focus) {
             // ease towards the chosen city, the short way round
@@ -93,12 +103,11 @@ if (canvas) {
       // second loop from the frame queued before the pause (2x speed). Resume is deferred one
       // frame for the same reason: phenomenon's toggle(true) calls render() immediately.
       if ('IntersectionObserver' in window) {
-        let inView = false;
         const observer = new IntersectionObserver((entries) => {
           for (const entry of entries) inView = entry.isIntersecting;
-          if (!currentGlobe) return;
+          if (!currentGlobe || held) return;
           if (!inView) { currentGlobe.toggle(false); return; }
-          requestAnimationFrame(() => { if (currentGlobe && inView) currentGlobe.toggle(true); });
+          requestAnimationFrame(() => { if (currentGlobe && inView && !held) currentGlobe.toggle(true); });
         }, { rootMargin: '200px 0px' });
         observer.observe(canvas);
       }
@@ -118,10 +127,24 @@ if (canvas) {
   // Touch keeps vertical swipes for page scrolling (CSS touch-action: pan-y), so on a phone
   // a drag spins sideways; the labels still turn it to each city.
   const pressed = (btn) => document.querySelectorAll('.loc-place').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+  let press = null;                                   // where a pointer went down, to tell a click from a drag
   canvas.addEventListener("pointerdown", (e) => {
+    if (held) return;
     drag = { x: e.clientX, y: e.clientY, phi, theta };
+    press = { x: e.clientX, y: e.clientY, t: performance.now() };
     focus = null;
     pressed(null);
+  });
+  // a click (not a drag) on a city's dot plays the zoom to it; the dots show a pointer
+  canvas.addEventListener("pointerup", (e) => {
+    const p = press;
+    press = null;
+    if (!p || !zoom || held || Math.hypot(e.clientX - p.x, e.clientY - p.y) > 6 || performance.now() - p.t > 500) return;
+    const name = zoom.cityAt(e.clientX, e.clientY);
+    if (name) { drag = null; playCity(name, document.querySelector(name === 'nairobi' ? '.loc-nbo' : '.loc-cgn')); }
+  });
+  canvas.addEventListener("pointermove", (e) => {
+    if (drag === null && zoom) canvas.classList.toggle('is-near', !held && !!zoom.cityAt(e.clientX, e.clientY));
   });
   window.addEventListener("pointermove", (e) => {
     if (drag === null) return;
@@ -171,8 +194,37 @@ if (canvas) {
   };
 
   const on = (sel, fn) => { const b = document.querySelector(sel); if (b) b.addEventListener("click", () => { fn(); pressed(b); }); };
-  on('.loc-nbo', () => { focus = showCity(NAIROBI); showInfo('nbo'); });
-  on('.loc-cgn', () => { focus = showCity(COLOGNE); showInfo('cgn'); });
+  // --- the city zoom: hands this globe over and takes it back (city-zoom.js) ---
+  const zoom = createCityZoom({
+    pageCanvas: canvas,
+    page: {
+      angles: () => ({ phi, theta }),
+      pause: () => { held = true; drag = null; focus = null; if (currentGlobe) currentGlobe.toggle(false); },
+      hide: () => { canvas.style.visibility = 'hidden'; },
+      release: () => {
+        held = false;
+        canvas.style.visibility = '';
+        canvas.classList.remove('is-near');
+        requestAnimationFrame(() => { if (currentGlobe && inView && !held) currentGlobe.toggle(true); });
+      },
+    },
+    look: LOOK,
+    fadeOut: ['.loc-word', '.loc-place', '.loc-info', '.loc-mode', '.logo-block', '.menu-btn', '.nav-de'],
+    isReduced: isReducedMotion,
+  });
+  const playCity = (name, btn) => {
+    showInfo(name === 'nairobi' ? 'nbo' : 'cgn');
+    pressed(btn);
+    zoom.play(name, { opener: btn });
+  };
+  // without the zoom (no GSAP), the labels turn the globe to the city as on /v2
+  const pick = (name, btn) => {
+    if (zoom) { playCity(name, btn); return; }
+    focus = showCity(CITIES[name]);
+    showInfo(name === 'nairobi' ? 'nbo' : 'cgn');
+  };
+  on('.loc-nbo', () => pick('nairobi', document.querySelector('.loc-nbo')));
+  on('.loc-cgn', () => pick('cologne', document.querySelector('.loc-cgn')));
   on('.loc-remote', () => { focus = null; showInfo('remote'); });
 
   // --- day / night: one switch; the background follows the attribute on <html> (globe.css) ---
@@ -181,7 +233,30 @@ if (canvas) {
     mode = next;
     root.dataset.globeMode = next;
     if (modeBtn) modeBtn.setAttribute('aria-checked', String(next === 'night'));
+    try { sessionStorage.setItem(MODE_KEY, next); } catch (e) { /* storage blocked: not remembered */ }
   };
   root.dataset.globeMode = mode;
+  if (modeBtn) modeBtn.setAttribute('aria-checked', String(mode === 'night'));
   if (modeBtn) modeBtn.addEventListener('click', () => setMode(mode === 'day' ? 'night' : 'day'));
+
+  // --- /globe/#locations (the work pages' way back) opens at the locations section ---
+  // The frames are measured again whenever the layout settles (ScrollTrigger refresh), so it
+  // jumps there again after each refresh until the visitor scrolls by themselves.
+  if (location.hash === '#locations') {
+    const ST = window.ScrollTrigger;
+    const goToLocations = () => {
+      const frames = window.V2 && window.V2.frames, lenis = window.WFM && window.WFM.lenis;
+      if (frames && lenis) lenis.scrollTo(frames.locations, { immediate: true, force: true });
+    };
+    const stop = () => {
+      if (ST) ST.removeEventListener('refresh', goToLocations);
+      ['wheel', 'touchstart', 'keydown'].forEach((t) => removeEventListener(t, stop));
+    };
+    if (ST) ST.addEventListener('refresh', goToLocations);
+    ['wheel', 'touchstart', 'keydown'].forEach((t) => addEventListener(t, stop, { passive: true }));
+    setTimeout(stop, 15000);
+    goToLocations();
+    if (document.readyState === 'complete') setTimeout(goToLocations, 300);
+    else addEventListener('load', () => setTimeout(goToLocations, 300), { once: true });
+  }
 }
