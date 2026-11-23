@@ -27,6 +27,10 @@
 
   document.documentElement.classList.add('motion');
 
+  // Extra parts of the locations frame that only some pages have (/globe: its background and the
+  // day / night switch). They move with the rest of the locations frame; /v2 has none of them.
+  const locExtras = ['.loc-bg', '.loc-mode'].filter((s) => document.querySelector(s));
+
   // Read u and the screen height from the CSS itself, so JS and CSS can never disagree.
   // Measured once per build, never inside an animation frame. 100svh (not innerHeight) so the
   // phone URL bar sliding in and out does not count as a size change.
@@ -218,7 +222,7 @@
 
   function build() {
     if (tl) { tl.scrollTrigger.kill(); tl.kill(); }
-    gsap.set(['.logo-block', '.scroll-hint', '.wm', ...we, '.portfolio', '.bg-video', '.featured', '.work', ...projs, '.st-help', '.st-big', '.st-video', '.st-copy', '.stat', '.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap', '.cta-video', '.cta-sub', '.cta-click', '.ex-box', '.ex-word', '.ex-copy', '.ex-services', '.pw', '.pc', '.loc-globe', '.loc-word', '.loc-place', '.loc-info', '.end-bg', '.end-video', '.foot-word', '.foot-mail', '.foot-col'], { clearProps: 'transform' });
+    gsap.set(['.logo-block', '.scroll-hint', '.wm', ...we, '.portfolio', '.bg-video', '.featured', '.work', ...projs, '.st-help', '.st-big', '.st-video', '.st-copy', '.stat', '.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap', '.cta-video', '.cta-sub', '.cta-click', '.ex-box', '.ex-word', '.ex-copy', '.ex-services', '.pw', '.pc', '.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras, '.end-bg', '.end-video', '.foot-word', '.foot-mail', '.foot-col'], { clearProps: 'transform' });
     gsap.set('.end-video', { clearProps: 'width,height,left,top' });   // the footer shrink sets these
     lastLogoT = -1;                                                  // the morph redraws at the new size
     // the block keeps Figma's 491 x 208 at the top (the loader's strip in Figma 203:6 is that tall;
@@ -446,7 +450,7 @@
     // locations frame with the globe rises in from below, one screen at scroll speed.
     const sLoc = sSteps + (pWords.length - 1) * (dWord + dSwap + hold);
     const lastStep = [pWords[3], pBoxes[3], pCopies[3], '.ex-services'];   // "services" leaves with the section
-    const loc = ['.loc-globe', '.loc-word', '.loc-place', '.loc-info'];
+    const loc = ['.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras];
     // the white gap between the last video and the incoming "locations." (2026-11-20): doubled
     // on large screens (1024+), halved on phones, unchanged on tablets. Both move at scroll speed, so the gap holds while
     // they move; "locations." starts that much further (or closer) and lands on its spot.

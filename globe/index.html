@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>freigeist agency</title>
+  <link rel="icon" href="../images/favicon.png">
+  <link rel="stylesheet" href="../v2/v2.css">
+  <link rel="stylesheet" href="globe.css">
+</head>
+<body>
+  <!-- the loader (Figma 73:766 -> 191:363 -> the site): the blurred icon brightens from 29% to full as
+       the counter on the left counts to 100, then the loader fades away to show the hero.
+       loader.js runs it; if the script never runs, CSS hides it after a few seconds. -->
+  <div class="loader" aria-hidden="true">
+    <img class="loader-icon" src="../v2/img/loader-icon.svg" alt="" width="1434" height="1434">
+    <p class="loader-count">0</p>
+  </div>
+  <!-- the menu (Figma 1:3). The button opens it; it comes down from the top and pushes the whole
+       page down to make room. While open, scrolling moves the page previews in an endless
+       loop. Preview images and page addresses are placeholders until the real ones arrive. -->
+  <!-- navbar right (Figma 63:394): language and the menu button; both flip colour over the page.
+       "de" leads to the German version once it exists. -->
+  <a class="nav-de" lang="de" hreflang="de">de</a>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-menu">menu</button>
+  <nav class="menu" id="site-menu" aria-label="menu" inert>
+    <p class="m-loc">remote<br>nbo<br>cgn</p>
+    <a class="m-mail" href="mailto:sema@freigeist.agency">sema@freigeist.agency</a>
+    <p class="m-social"><a>instagram.</a><br><a>linkedin.</a><br><a>x.</a></p>
+    <div class="m-slider" aria-label="pages"></div>
+    <p class="m-name" aria-live="polite">home</p>
+    <p class="m-word" aria-hidden="true">menu.</p>
+    <button class="m-exit" type="button">exit.</button>
+  </nav>
+
+  <main class="stage">
+    <!-- background video: fills the screen behind every frame -->
+    <video class="bg-video" autoplay muted loop playsinline preload="auto"
+           poster="../videos/mzuka-hero-poster.jpg" aria-hidden="true">
+      <source src="../videos/mzuka-hero.webm" type="video/webm">
+      <source src="../videos/mzuka-hero.mp4" type="video/mp4">
+    </video>
+
+    <!-- frame 12 -->
+    <p class="scroll-hint">scroll to discover what we do.</p>
+
+    <h1 class="wordmark" aria-label="freigeist agency">
+      <span class="wm wm-geist" aria-hidden="true">geist</span>
+      <span class="wm wm-agency" aria-hidden="true">agency™</span>
+      <span class="wm wm-frei" aria-hidden="true">frei</span>
+    </h1>
+    <p class="wm wm-tagline">is a creative &amp; advertising agency based in cologne &amp; nairobi.</p>
+
+    <!-- "we" (frames 23 and 35) -->
+    <section class="we" aria-label="what we do">
+      <h2 class="we-word">we</h2>
+      <ul class="we-list">
+        <li>think.</li>
+        <li>develop.</li>
+        <li>conceptualise.</li>
+        <li>design.</li>
+        <li>manage.</li>
+        <li>direct.</li>
+        <li>educate.</li>
+        <li>optimise.</li>
+      </ul>
+    </section>
+
+    <!-- frame 24. The link address will be added later. -->
+    <a class="portfolio">portfolio</a>
+
+    <!-- Figma frame 137:163 -->
+    <!-- Figma frames 138:215 and 140:364, featured projects. Before "featured work." in the page
+         so the carousel draws on top of them (and flips colour over them), as in Figma.
+         The five projects and their videos (2026-11-20), names and industries as on the live
+         site; blaustrand is the new 4K video. Link addresses added later. -->
+    <div class="work">
+      <a class="proj proj-1" style="--i: 0" aria-label="motus intimi project"><video class="proj-video" muted loop playsinline preload="metadata" poster="../videos/MOTUS-INTIMI-RENDER---NO-TEXT_poster.0000000.jpg"><source src="../videos/MOTUS-INTIMI-RENDER---NO-TEXT_webm.webm" type="video/webm"><source src="../videos/MOTUS-INTIMI-RENDER---NO-TEXT_mp4.mp4" type="video/mp4"></video></a>
+      <p class="proj-name" style="--i: 0">motus intimi.</p>
+      <p class="proj-tags" style="--i: 0">events &amp;<br>music.</p>
+
+      <a class="proj proj-2" style="--i: 1" aria-label="stahlbox x holypriest project"><video class="proj-video" muted loop playsinline preload="metadata" poster="../videos/STAHLBOX-HOLYPREIST---NO-TEXT_poster.0000000.jpg"><source src="../videos/STAHLBOX-HOLYPREIST---NO-TEXT_webm.webm" type="video/webm"><source src="../videos/STAHLBOX-HOLYPREIST---NO-TEXT_mp4.mp4" type="video/mp4"></video></a>
+      <p class="proj-name" style="--i: 1">stahlbox x holypriest.</p>
+      <p class="proj-tags" style="--i: 1">events &amp;<br>music.</p>
+
+      <a class="proj proj-3" style="--i: 2" aria-label="blaustrand project"><video class="proj-video" muted loop playsinline preload="metadata" poster="../videos/upscaled_4k_poster.0000000.jpg"><source src="../videos/upscaled_4k_webm.webm" type="video/webm"><source src="../videos/upscaled_4k_mp4.mp4" type="video/mp4"></video></a>
+      <p class="proj-name" style="--i: 2">blaustrand.</p>
+      <p class="proj-tags" style="--i: 2">events &amp;<br>music.</p>
+
+      <a class="proj proj-4" style="--i: 3" aria-label="joline meens project"><video class="proj-video" muted loop playsinline preload="metadata" poster="../videos/efce1605-2cd0-4a55-81d3-e1c0b08e429b_poster.0000000.jpg"><source src="../videos/efce1605-2cd0-4a55-81d3-e1c0b08e429b_webm.webm" type="video/webm"><source src="../videos/efce1605-2cd0-4a55-81d3-e1c0b08e429b_mp4.mp4" type="video/mp4"></video></a>
+      <p class="proj-name" style="--i: 3">joline meens.</p>
+      <p class="proj-tags" style="--i: 3">finance &amp;<br>insurance.</p>
+
+      <a class="proj proj-5" style="--i: 4" aria-label="vitali koch project"><video class="proj-video" muted loop playsinline preload="metadata" poster="../videos/Sequenz-01_1_poster.0000000.jpg"><source src="../videos/Sequenz-01_1_webm.webm" type="video/webm"><source src="../videos/Sequenz-01_1_mp4.mp4" type="video/mp4"></video></a>
+      <p class="proj-name" style="--i: 4">vitali koch.</p>
+      <p class="proj-tags" style="--i: 4">finance &amp;<br>insurance.</p>
+    </div>
+
+    <!-- an endless carousel: v2.js repeats the copy to fill the screen and moves it left to right -->
+    <h2 class="featured" aria-label="featured work.">
+      <span class="featured-track" aria-hidden="true"><span class="featured-copy">featured work.</span></span>
+    </h2>
+
+    <!-- Figma frame 102:6, the statement. The video placeholder comes before the paragraph so
+         the paragraph's colour flip turns it white where it overlaps the video. Text tidied
+         from Figma: "industry", single spaces, "ideas, products" (agreed 2026-11-20). -->
+    <p class="st-help">(we help you to)</p>
+    <h2 class="st-big">take advantage of<br>the plasticity of<br>perception.</h2>
+    <!-- The video is juma kaffee's, from the live site (2026-11-20).
+         The statistics (Figma 138:211) live inside the video box so they never show outside it
+         (the box clips them) and move with it. Text, so screen readers can still read them. -->
+    <div class="st-video">
+      <video class="st-vid" muted loop playsinline preload="metadata" poster="../videos/Scene-1_poster.0000000.jpg" aria-hidden="true"><source src="../videos/Scene-1_webm.webm" type="video/webm"><source src="../videos/Scene-1_mp4.mp4" type="video/mp4"></video>
+      <span class="st-shade" aria-hidden="true"></span>
+      <p class="stat stat-n stat-1">36</p>
+      <p class="stat stat-l stat-1l">projects delivered</p>
+      <p class="stat stat-n stat-2">5546</p>
+      <p class="stat stat-l stat-2l">leads generated</p>
+      <p class="stat stat-n stat-3">10+</p>
+      <p class="stat stat-l stat-3l">years experience</p>
+    </div>
+    <!-- Figma frame 140:391, right after the statistics. Link address for "about" added later. -->
+    <ul class="ab-list">
+      <li>advertising.</li>
+      <li>webdevelopment.</li>
+      <li>strategy.</li>
+      <li>software.</li>
+      <li>design.</li>
+      <li>creative direction.</li>
+    </ul>
+    <!-- Figma frames 140:401 and 145:451: four partners, a column of photos 385 apart. Before the
+         paragraph so the paragraph flips colour over them. Partners 2-4 are placeholders
+         (same photo, placeholder captions) until the real ones arrive. -->
+    <img class="ab-photo ab-photo-1" src="../v2/img/partner-placeholder.jpg" alt="juma, lead strategist" width="722" height="718">
+    <img class="ab-photo ab-photo-2" src="../v2/img/partner-mwaniki.jpg" alt="mwaniki, lead developer" width="722" height="722">
+    <img class="ab-photo ab-photo-3" src="../v2/img/partner-placeholder.jpg" alt="partner 3 (placeholder)" width="722" height="718">
+    <img class="ab-photo ab-photo-4" src="../v2/img/partner-placeholder.jpg" alt="partner 4 (placeholder)" width="722" height="718">
+    <p class="ab-text">we combine our partners' individual experience in sales, performance marketing, strategic creative direction, design, web development, communications and software to create immediate, lasting growth for your business.</p>
+    <a class="ab-about">about</a>
+    <!-- one caption per partner, beside the lower photo spot. Tidied from "(lead strategist )juma." -->
+    <p class="ab-cap">(lead strategist) juma.</p>
+    <p class="ab-cap">(lead developer) mwaniki.</p>
+    <p class="ab-cap">(partner 3) name.</p>
+    <p class="ab-cap">(partner 4) name.</p>
+
+    <!-- Figma frame 154:602, the call to action. Clicking starts an email to sema@freigeist.agency.
+         The video comes before the text so the text's colour flip works over it. -->
+    <a class="cta-video" href="mailto:sema@freigeist.agency" tabindex="-1" aria-hidden="true">
+      <video muted loop playsinline preload="metadata" poster="../videos/cta-poster.jpg">
+        <source src="../videos/cta.webm" type="video/webm">
+        <source src="../videos/cta.mp4" type="video/mp4">
+      </video>
+    </a>
+    <p class="cta-sub">to get started.</p>
+    <a class="cta-click" href="mailto:sema@freigeist.agency">(click me)</a>
+
+    <!-- Figma frame 4:2, the first process step. The box (the examination video, also used for
+         "consult.", 2026-11-20) comes before the text
+         so the text's colour flip works over it. -->
+    <div class="ex-box" aria-hidden="true"><video class="step-video" muted loop playsinline preload="metadata" poster="../videos/examination_video_poster.0000000.jpg"><source src="../videos/examination_video_webm.webm" type="video/webm"><source src="../videos/examination_video_mp4.mp4" type="video/mp4"></video></div>
+    <!-- the next steps' videos (Figma 8:137), under all the step text so its colour flip works -->
+    <div class="pb pb-2" aria-hidden="true"><video class="step-video" muted loop playsinline preload="metadata" poster="../videos/examination_video_poster.0000000.jpg"><source src="../videos/examination_video_webm.webm" type="video/webm"><source src="../videos/examination_video_mp4.mp4" type="video/mp4"></video></div>
+    <div class="pb pb-3" aria-hidden="true"><video class="step-video" muted loop playsinline preload="metadata" poster="../videos/execution_video_poster.0000000.jpg"><source src="../videos/execution_video_webm.webm" type="video/webm"><source src="../videos/execution_video_mp4.mp4" type="video/mp4"></video></div>
+    <div class="pb pb-4" aria-hidden="true"><video class="step-video" muted loop playsinline preload="metadata" poster="../videos/brand_strategy_video_poster.0000000.jpg"><source src="../videos/brand_strategy_video_webm.webm" type="video/webm"><source src="../videos/brand_strategy_video_mp4.mp4" type="video/mp4"></video></div>
+    <!-- Figma 8:137 (188:347): "services", beside the video for the whole process section.
+         After the videos so its colour flip works over them. Link address added later. -->
+    <a class="ex-services">services</a>
+    <h2 class="ex-word">examine.</h2>
+    <!-- line breaks set by hand to match Figma's balanced wrapping (no single width gives them) -->
+    <p class="ex-copy">we analyse where your<br>business currently stands.<br>how high is your revenue? how<br>good is your offer framing? what<br>are currently your biggest strengths<br>&amp; weaknesses? what are the<br>most lucrative future opportunities<br>&amp; most relevant threats?</p>
+
+    <!-- Figma frame 8:137: the next process steps, shown in the same end layout as "examine."
+         (video centred, word top left, paragraph lower right). Videos are placeholders.
+         Text from Figma; "meadia" corrected to "media". -->
+    <h2 class="pw pw-2">consult.</h2>
+    <h2 class="pw pw-3">execute.</h2>
+    <h2 class="pw pw-4">manage.</h2>
+    <p class="pc pc-2">the examination results allow us to effectively restructure your offer and sales process, corner your target audience &amp; develop your brand &amp; advertising strategy in a way that resonates with your target audience. this allows you to crystalise yourself from the crowd.</p>
+    <p class="pc pc-3">we execute the developed strategy for your local &amp; online brand presence, take your sales team through our sales workshop to equip them with the skills needed to convert the new leads and drop you into your new client pool with your advertising campaigns.</p>
+    <p class="pc pc-4">if needed, we manage and direct and operate media buying, strategy &amp; production so that you can concentrate on making sales and delivering your product or service.</p>
+
+    <!-- /globe: the same page as /v2 except this section. The globe is only its dots (no sphere),
+         and "day" / "night" switch the section's background and the dots' colour together
+         (globe.js, globe.css). The background and the globe come before the text so the text's
+         colour flip works over both. -->
+    <div class="loc-bg" aria-hidden="true"></div>
+    <div class="loc-globe"><canvas id="loc-canvas" style="opacity: 0; transition: opacity 1.5s ease;"></canvas></div>
+    <h2 class="loc-word">locations.</h2>
+    <!-- buttons: "nbo" / "cgn" turn the globe to that city's dot, "remote" lets it spin again -->
+    <button type="button" class="loc-place loc-remote" aria-label="remote: let the globe spin">remote</button>
+    <button type="button" class="loc-place loc-nbo" aria-label="nbo: show Nairobi on the globe">nbo</button>
+    <button type="button" class="loc-place loc-cgn" aria-label="cgn: show Cologne on the globe">cgn</button>
+    <!-- day / night: one switch, two words; the chosen one is underlined like the place labels -->
+    <button type="button" class="loc-mode" role="switch" aria-checked="false" aria-label="night mode for the globe"><span class="lm-day">day</span> <span class="lm-night">night</span></button>
+    <!-- updated Figma 186:285: the lines show the chosen location's details; globe.js swaps them
+         when "remote" / "nbo" / "cgn" is clicked. Placeholders until the real details arrive. -->
+    <p class="loc-info" aria-live="polite"><span class="li-address">remote address</span><br><span class="li-hours">remote opening hours</span><br><a class="li-mail" href="mailto:sema@freigeist.agency">sema@freigeist.agency</a></p>
+
+    <!-- Figma frame 49:163: the hero's rock video again, filling the screen. After the
+         locations so it rises over the globe. Loads only when it is about to show. -->
+    <!-- Figma 49:208 (footer): the platinum page the video shrinks onto; rises with the video -->
+    <div class="end-bg" aria-hidden="true"></div>
+    <video class="end-video" muted loop playsinline preload="none"
+           poster="../videos/mzuka-hero-poster.jpg" aria-hidden="true">
+      <source src="../videos/mzuka-hero.webm" type="video/webm">
+      <source src="../videos/mzuka-hero.mp4" type="video/mp4">
+    </video>
+
+    <!-- Figma 49:294: the name across the shrunken video. After the video so its colour flip
+         turns it light over the picture and black on the platinum page. -->
+    <p class="foot-word">freigeistagency™</p>
+    <!-- Figma 49:282, the final footer: the email above, three link columns below.
+         Link addresses (other than the email) added later. -->
+    <a class="foot-mail" href="mailto:sema@freigeist.agency">sema@freigeist.agency</a>
+    <nav class="foot-col foot-col-1" aria-label="site"><a>services.</a><a>portfolio.</a><a>about.</a></nav>
+    <nav class="foot-col foot-col-2" aria-label="legal"><a>terms &amp; conditions.</a><a>privacy policy.</a><a>imprint.</a></nav>
+    <nav class="foot-col foot-col-3" aria-label="social"><a>instagram.</a><a>linkedin.</a><a>x.</a></nav>
+
+    <p class="st-copy">at freigeistagency™ we give brands with remarkable ideas, products and services the ability to position themselves at the top of their industry by shaping how they are perceived by their target market.</p>
+    <!-- the logo block (Figma frame 12) that becomes the navbar's left element (Figma 63:394):
+         v2.js morphs its outline into the nav shape over the first scroll. Last in the stage so
+         it stays on top of everything and flips colour over all of it. -->
+    <svg class="logo-block" viewBox="0 0 491 208" preserveAspectRatio="none" role="img" aria-label="freigeist"><path fill="#fff" d="M491 208H448.104L441.155 134.898L441.038 133.659L440.148 132.817L409.156 103.453L407.622 102L405.464 102.531L334.31 120.054L332.509 120.497L331.418 122.361L281.288 208H0V0H491V208ZM435.134 136.571C435.397 143.294 436.674 175.895 437.933 208H303.137L338.59 128.284C342.442 127.288 401.727 111.961 405.418 111.007C408.339 113.52 433.424 135.101 435.134 136.571ZM401.146 186.235L424.997 176.767V158.743L401.146 186.235ZM351.983 169.43L389.901 185.004L358.173 147.415L351.983 169.43Z"/></svg>
+  </main>
+  <div class="scroll-space" aria-hidden="true"></div>
+
+  <script src="../js/vendor/gsap/3.15.0/gsap.min.js"></script>
+  <script src="../js/vendor/gsap/3.15.0/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+  <script src="../v2/v2.js"></script>
+  <script src="../v2/menu.js"></script>
+  <script src="../v2/loader.js"></script>
+  <script type="module" src="globe.js"></script>
+</body>
+</html>
