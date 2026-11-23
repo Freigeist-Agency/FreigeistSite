@@ -1,0 +1,89 @@
+/* A city's work page (/work/nairobi, /work/cologne): the city's name, the way back to the
+   locations and the project tiles. The city zoom on /globe ends on this same section: it reads the
+   section from these pages and lands its dots on this layout (globe/city-zoom.js), so the zoom's
+   last frame and a reload of the address look the same. Day / night follow
+   html[data-globe-mode], set by the switch on /globe. Arial lowercase, the big words in -0.06em. */
+:root {
+  --cz-page: #fff;
+  --cz-ink: #000;
+  --cz-muted: #666;
+  --cz-gutter: max(16px, 1.3vw);
+  --cz-big: clamp(64px, 13.7vw, 207px);
+}
+html[data-globe-mode="night"] {
+  --cz-page: #000;
+  --cz-ink: #fff;
+  --cz-muted: #999;
+}
+
+/* the page on its own (the zoom brings only the section into /globe) */
+.cz-body { margin: 0; background: var(--cz-page); }
+
+.cz-work {
+  position: fixed;
+  inset: 0;
+  background: var(--cz-page);
+  color: var(--cz-ink);
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 400;
+  text-transform: lowercase;
+  -webkit-font-smoothing: antialiased;
+}
+.cz-work[hidden] { display: none; }
+.cz-work * { box-sizing: border-box; margin: 0; padding: 0; }
+
+.cz-title {
+  position: absolute;
+  left: var(--cz-gutter);
+  top: calc(var(--cz-gutter) * 1.5);
+  font-size: var(--cz-big);
+  font-weight: 400;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  outline: none;
+}
+.cz-back {
+  position: absolute;
+  right: var(--cz-gutter);
+  top: calc(var(--cz-gutter) * 1.5);
+  font-size: max(16px, 1.6vw);
+  letter-spacing: -0.06em;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 0.06em;
+}
+.cz-back:focus-visible { outline: 2px solid var(--cz-ink); outline-offset: 4px; }
+
+.cz-tiles {
+  position: absolute;
+  left: var(--cz-gutter);
+  right: var(--cz-gutter);
+  top: calc(var(--cz-gutter) * 2.5 + var(--cz-big));
+  bottom: calc(var(--cz-gutter) * 3.5);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--cz-gutter);
+  list-style: none;
+}
+.cz-tile { position: relative; min-height: 0; }
+.cz-tile-media {
+  position: absolute;
+  inset: 0 0 calc(max(16px, 1.6vw) * 2.6) 0;
+  overflow: hidden;
+  background: var(--cz-ink);
+}
+.cz-tile-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cz-tile-name, .cz-tile-tags {
+  position: absolute;
+  left: 0;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+.cz-tile-name { bottom: calc(max(12px, 1vw) * 1.3); font-size: max(16px, 1.6vw); }
+.cz-tile-tags { bottom: 0; font-size: max(12px, 1vw); color: var(--cz-muted); }
+
+/* phones: the tiles in one column */
+@media (max-width: 767px) {
+  .cz-tiles { grid-template-columns: 1fr; }
+}
