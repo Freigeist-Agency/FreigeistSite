@@ -181,12 +181,12 @@
     <p class="pc pc-4">if needed, we manage and direct and operate media buying, strategy &amp; production so that you can concentrate on making sales and delivering your product or service.</p>
 
     <!-- /globe: the same page as /v2 except this section. The globe is only its dots (no sphere),
-         and "day" / "night" switch the section's background and the dots' colour together
-         (globe.js, globe.css). The background and the globe come before the text so the text's
-         colour flip works over both. -->
+         and "day" / "night" switch the section's background (globe.js, globe.css). "locations."
+         sits behind the globe, so the dots run over its letters and show the globe is see-through;
+         the dots flip colour over whatever is under them, so they stay visible on the letters too. -->
     <div class="loc-bg" aria-hidden="true"></div>
-    <div class="loc-globe"><canvas id="loc-canvas" style="opacity: 0; transition: opacity 1.5s ease;"></canvas></div>
     <h2 class="loc-word">locations.</h2>
+    <div class="loc-globe"><canvas id="loc-canvas" style="opacity: 0; transition: opacity 1.5s ease;"></canvas></div>
     <!-- buttons: "nbo" / "cgn" turn the globe to that city's dot, "remote" lets it spin again -->
     <button type="button" class="loc-place loc-remote" aria-label="remote: let the globe spin">remote</button>
     <button type="button" class="loc-place loc-nbo" aria-label="nbo: show Nairobi on the globe">nbo</button>

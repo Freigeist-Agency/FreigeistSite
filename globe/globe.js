@@ -1,20 +1,16 @@
 // The /globe page's "locations." globe: /v2's globe.js (drag in every direction, "nbo" / "cgn"
 // turn it to that city's dot, "remote" lets it spin again), drawn as dots only. It uses the
 // self-hosted "dots only" build of cobe 0.6.3, which leaves everything but the land dots and the
-// markers transparent, so the section's background shows through. "day" / "night" switch the
-// background (globe.css) and the dots' colour together: black dots by day, white dots by night.
+// markers transparent, so the section's background and "locations." (behind the globe) show
+// through. The dots are white and the globe flips colour (globe.css), so they come out black on
+// the day background, white on the night one, and inverted over the letters. "day" / "night"
+// only switch the background.
 import createGlobe from '../js/vendor/cobe/0.6.3-dots/cobe.esm.js';
 const canvas = document.getElementById("loc-canvas");
 if (canvas) {
   const NAIROBI = [-1.2921, 36.8219], COLOGNE = [50.9375, 6.9603];
-  // dot and marker colours per mode; the background colours are in globe.css
-  const MODES = {
-    day: { baseColor: [0, 0, 0], markerColor: [0, 0, 0] },
-    night: { baseColor: [1, 1, 1], markerColor: [1, 1, 1] },
-  };
   const root = document.documentElement;
   let mode = 'day';
-  let pendingMode = null;                            // colours for onRender to hand to cobe
   // cobe's angles that bring a [latitude, longitude] to the front (from cobe's own examples)
   const anglesFor = ([lat, lon]) => [Math.PI - ((lon * Math.PI) / 180 - Math.PI / 2), (lat * Math.PI) / 180];
   const TILT = 1.3;                                   // up/down limit, so it never flips over a pole
@@ -56,7 +52,8 @@ if (canvas) {
         mapBrightness: 6,
         // must be a number: left out, the shader gets NaN and some GPUs then draw no dots at all
         mapBaseBrightness: 0,
-        ...MODES[mode],
+        baseColor: [1, 1, 1],
+        markerColor: [1, 1, 1],
         glowColor: [0, 0, 0],
         markers: [
           { location: [-1.2921, 36.8219], size: 0.08 }, // Nairobi
@@ -78,7 +75,6 @@ if (canvas) {
           }
           state.phi = phi;
           state.theta = theta;
-          if (pendingMode) { Object.assign(state, MODES[pendingMode]); pendingMode = null; }
           // Always match the real drawing buffer (sized by phenomenon on resize)
           state.width = canvas.width;
           state.height = canvas.height;
@@ -179,22 +175,12 @@ if (canvas) {
   on('.loc-cgn', () => { focus = showCity(COLOGNE); showInfo('cgn'); });
   on('.loc-remote', () => { focus = null; showInfo('remote'); });
 
-  // --- day / night: one switch; the background follows through the attribute on <html> ---
+  // --- day / night: one switch; the background follows the attribute on <html> (globe.css) ---
   const modeBtn = document.querySelector('.loc-mode');
-  let modeTimer;
   const setMode = (next) => {
     mode = next;
+    root.dataset.globeMode = next;
     if (modeBtn) modeBtn.setAttribute('aria-checked', String(next === 'night'));
-    clearTimeout(modeTimer);
-    const swap = () => {
-      root.dataset.globeMode = next;
-      pendingMode = next;
-      canvas.style.opacity = '1';
-    };
-    if (isReducedMotion() || !hasFadedIn) { swap(); return; }
-    canvas.style.transition = 'opacity 0.25s ease';   // fade the dots out, swap, fade back in
-    canvas.style.opacity = '0';
-    modeTimer = setTimeout(swap, 250);
   };
   root.dataset.globeMode = mode;
   if (modeBtn) modeBtn.addEventListener('click', () => setMode(mode === 'day' ? 'night' : 'day'));

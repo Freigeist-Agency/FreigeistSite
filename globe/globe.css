@@ -1,8 +1,9 @@
 /* /globe: what differs from /v2 (whose v2.css this page also loads). Only the locations section:
-   its own background, which "day" / "night" switch, and the switch itself. The globe draws only
-   its dots (globe.js), so this background is what shows around and through it. Every text in
-   the section keeps its colour flip (mix-blend-mode: difference), so it turns black on the day
-   background, white on the night one, and inverts wherever it crosses the dots. */
+   its own background, which "day" / "night" switch, the switch itself, and "locations." behind
+   the globe. The globe draws only its dots (globe.js), so the background and the word show
+   through it. The word, the dots and the other texts all flip colour (mix-blend-mode:
+   difference): black on the day background, white on the night one, and the dots invert where
+   they cross the letters. */
 
 :root {
   --globe-day: #fff;                  /* the stage's own white, so day looks exactly like /v2 */
@@ -22,6 +23,9 @@
 }
 html[data-globe-mode="night"] .loc-bg { background: var(--globe-night); }
 /* without the motion script the page scrolls as one long layout: cover the locations part of it */
+/* white dots, flipped against what is under them: black by day, white by night, inverted over
+   "locations." (the transform v2.js puts on this box keeps the blend; it just groups the canvas) */
+.loc-globe { mix-blend-mode: difference; }
 html:not(.motion) .loc-bg {
   top: calc(16850 * var(--u));
   height: calc(750 * var(--u));
