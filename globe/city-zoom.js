@@ -11,12 +11,17 @@
 // It ends on the city's own page: the section is read from /work/<city> and the address changes
 // to it, so a reload or a shared link opens the same page. Back (its link, the browser's back,
 // Escape) plays the timeline in reverse and hands the globe back.
+// "remote" plays the other way (remote-zoom-design.md): the globe shrinks onto Earth's orbit and
+// the solar system appears around it, with FRED. behind (solar-system.js). It stays on /globe, with
+// its own history step (#remote); the labels stay usable there.
 // Day / night: both canvases draw white dots flipped against what is below them (globe.css), so
 // they come out in the section's ink either way; the work page's colours follow
 // html[data-globe-mode] (work/work.css).
 import createGlobe from '../js/vendor/cobe/0.6.3-dots/cobe.esm.js';
+import { createSolarSystem } from './solar-system.js';
 
 export const CITIES = { nairobi: [-1.2921, 36.8219], cologne: [50.9375, 6.9603] };
+export const REMOTE = 'remote';
 const RAD = Math.PI / 180;
 const TAU = Math.PI * 2;
 const MAX_DELAY = 0.45;                       // share of the morph over which the dots set off
@@ -85,11 +90,12 @@ function tileTargets(rects, count) {
  * @param {{ angles(): {phi:number, theta:number}, pause(): void, hide(): void, release(): void }} deps.page
  *        controls for the page's globe: stop drawing, hide its canvas, give it back
  * @param {object} deps.look      the cobe options both globes share, so the hand-over is seamless
- * @param {string[]} deps.fadeOut what fades away while the globe zooms (the section's texts, nav)
+ * @param {string[]} deps.fadeOut what fades away while the globe zooms in (the section's texts, nav)
+ * @param {string[]} deps.fadeOutRemote what fades away while it zooms out (the labels stay)
  * @param {() => boolean} deps.isReduced
  * @returns {{ play(name: string, opts?: {opener?: Element}): Promise<boolean>, cityAt(x: number, y: number): string|null, isOpen(): boolean } | null}
  */
-export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
+export function createCityZoom({ pageCanvas, page, look, fadeOut, fadeOutRemote, isReduced }) {
   const gsap = window.gsap;
   const root = document.documentElement;
   const mount = document.querySelector('.cz-mount');
@@ -101,10 +107,14 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
   // the one state the timeline animates; the zoom globe and the dots canvas draw from it.
   // ox / oy: where the sphere's centre sits, from the screen's centre (CSS px)
   const S = { phi: 0, theta: 0, scale: 1, ox: 0, oy: 0, globeAlpha: 0, denseAlpha: 0, morph: 0, solid: 0 };
+  // the solar system's parts (0..1 shown) and its orbiting time, for "remote"
+  const SOLAR_START = { sun: 0, rings: 0, planets: 0, earth: 0, fred: 0, eyes: 0, orbit: 0 };
+  Object.assign(S, SOLAR_START);
+  const solar = createSolarSystem();
   const view = { vw: 0, vh: 0, side: 0, dpr: 1, startScale: 1 };   // startScale: the page globe's size
   let countries = null;       // country-dots.json, once loaded
   const works = {};           // name -> Promise of the section read from /work/<name>
-  let city = null;            // the city shown (or being played to)
+  let city = null;            // the city shown (or being played to), or REMOTE
   let tl = null;              // its timeline
   let dots = [];              // [{ lat, lon, tx, ty, r, delay }]
   let work = null;            // the work section in the page
@@ -125,7 +135,9 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
     const k = Math.min(devicePixelRatio || 1, 2);
     dotsCanvas.width = Math.round(view.vw * k);
     dotsCanvas.height = Math.round(view.vh * k);
+    solar.layout(view.vw, view.vh);
   }
+  const isRemote = () => city === REMOTE;
   const project = (lat, lon) => projectOn(lat, lon, S.phi, S.theta,
     view.vw / 2 + S.ox, view.vh / 2 + S.oy, 0.4 * S.scale * view.side);   // sphere: 0.8 of half the canvas
 
@@ -197,6 +209,7 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
     const k = dotsCanvas.width / view.vw;
     ctx.setTransform(k, 0, 0, k, 0, 0);
     ctx.clearRect(0, 0, view.vw, view.vh);
+    if (isRemote()) { solar.draw(ctx, S, root.dataset.globeMode); return; }
     if (!city || !countries || (S.denseAlpha <= 0 && S.morph <= 0)) return;
     const data = countries[city];
     const step = ((data.bounds[2] - data.bounds[0]) / 70) * RAD * 0.4 * S.scale * view.side;
@@ -221,7 +234,7 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
   function render() {
     globeCanvas.style.opacity = String(S.globeAlpha);
     showGlobe(S.globeAlpha > 0);
-    setGlobeDpr(S.scale > view.startScale * 1.5 ? 1 : view.dpr);
+    setGlobeDpr(S.scale > view.startScale * 1.5 || isRemote() ? 1 : view.dpr);
     drawDots();
   }
 
@@ -329,8 +342,48 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
     return t;
   }
 
+  // remote: the globe shrinks onto Earth's place in the solar system, which appears around it
+  function buildRemote(from) {
+    const e = solar.earth(0);
+    const scale = e.r / (0.4 * view.side);
+    const t = gsap.timeline({ paused: true, defaults: { ease: 'none' }, onUpdate: render, onComplete: arrived, onReverseComplete: left });
+    t.fromTo(S, { theta: from.theta }, { theta: 0.35, duration: 1.4, ease: 'power2.inOut' }, 0)
+      .fromTo(S, { scale: from.scale }, { scale, duration: 1.5, ease: 'power3.inOut' }, 0)
+      .fromTo(S, { ox: from.ox, oy: from.oy }, { ox: e.x - view.vw / 2, oy: e.y - view.vh / 2, duration: 1.5, ease: 'power3.inOut' }, 0)
+      .fromTo(fadeOutRemote, { opacity: 1 }, { opacity: 0, duration: 0.4 }, 0.2)
+      .fromTo(S, { sun: 0 }, { sun: 1, duration: 0.6, ease: 'power2.out' }, 0.9)
+      .fromTo(S, { rings: 0 }, { rings: 1, duration: 1.0 }, 1.0)
+      .fromTo(S, { earth: 0 }, { earth: 1, duration: 0.25 }, 1.3)
+      .fromTo(S, { globeAlpha: 1 }, { globeAlpha: 0, duration: 0.25 }, 1.4)   // cobe blurs when this small
+      .fromTo(S, { planets: 0 }, { planets: 1, duration: 0.6 }, 1.4)
+      .fromTo(S, { fred: 0 }, { fred: 1, duration: 1.2, ease: 'power2.out' }, 1.8)
+      .fromTo(S, { eyes: 0 }, { eyes: 1, duration: 0.2 }, 2.9)
+      .fromTo(S, { eyes: 1 }, { eyes: 0.85, duration: 0.5, immediateRender: false }, 3.1);
+    return t;
+  }
+  // remote at rest: the planets keep going round (paused for reduced motion)
+  let lastTick = 0;
+  function orbitTick(time) {
+    const dt = lastTick ? Math.min(0.1, time - lastTick) : 0;
+    lastTick = time;
+    S.orbit += dt;
+    drawDots();
+  }
+  function startOrbit() {
+    if (isReduced()) return;
+    lastTick = 0;
+    gsap.ticker.add(orbitTick);
+  }
+  function stopOrbit() { gsap.ticker.remove(orbitTick); }
+
   function arrived() {
     if (!city) return;
+    if (isRemote()) {
+      root.dataset.cityZoom = REMOTE;
+      if (dirty) rebuild();
+      startOrbit();
+      return;
+    }
     root.dataset.cityZoom = 'work';
     if (dirty) rebuild();
     parts().title.focus({ preventScroll: true });
@@ -339,42 +392,60 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
     if (!city) return;
     if (tl) tl.kill();
     tl = null;
+    stopOrbit();
+    const wasRemote = isRemote();
     city = null;
     dots = [];
+    Object.assign(S, SOLAR_START);
     drawDots();
     S.globeAlpha = 0;
     globeCanvas.style.opacity = '0';
     showGlobe(false);
     page.release();                             // its last frame is this frame: no jump
-    gsap.set(fadeOut, { clearProps: 'opacity' });
+    gsap.set(wasRemote ? fadeOutRemote : fadeOut, { clearProps: 'opacity' });
     mount.replaceChildren();
     work = null;
-    root.classList.remove('cz-open');
+    root.classList.remove('cz-open', 'cz-remote');
     root.dataset.cityZoom = 'off';
     const l = lenis();
     if (l) l.start();
     if (opener && opener.isConnected) opener.focus({ preventScroll: true });
     opener = null;
+    const done = whenLeft;
+    whenLeft = null;
+    if (done) done();
   }
+  let whenLeft = null;          // resolves the wait for the zoom to finish going back
   // after a resize: the same end state, measured again
   function rebuild() {
     dirty = false;
     measure();
     setGlobeDpr(view.dpr, true);
-    aimDots();
     if (tl) tl.kill();
     const from = startFrom();
     view.startScale = from.scale;
-    tl = build(city, from);
+    if (isRemote()) {
+      tl = buildRemote(from);
+    } else {
+      aimDots();
+      tl = build(city, from);
+    }
     tl.progress(1);
+    drawDots();
   }
 
-  async function play(name, { opener: from = null, push = true } = {}) {
-    if (!CITIES[name] || city || busy) return false;
+  async function play(name, { opener: from = null, push = true, instant = false } = {}) {
+    if ((!CITIES[name] && name !== REMOTE) || busy) return false;
+    if (city === name) return false;
+    if (isRemote() && root.dataset.cityZoom === REMOTE && name !== REMOTE) {
+      await new Promise((resolve) => { whenLeft = resolve; goBack(); });   // back to Earth first
+    }
+    if (city) return false;
     busy = true;
-    let section;
+    let section = null;
     try {
-      [section] = await Promise.all([loadWork(name), loadCountries()]);
+      if (name === REMOTE) await solar.ready;
+      else [section] = await Promise.all([loadWork(name), loadCountries()]);
     } catch (err) {
       busy = false;
       console.error('city zoom: could not load the city\'s page, opening it directly', err);
@@ -388,16 +459,27 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
     const l = lenis();
     if (l) l.stop();
     root.classList.add('cz-open');              // shows the zoom's canvases (transparent so far)
+    if (name === REMOTE) root.classList.add('cz-remote');   // the labels stay usable
     page.pause();                               // the page's globe holds still on its last frame
     measure();
     try {
       if (!globe) startGlobe(); else setGlobeDpr(view.dpr, true);
     } catch (err) {
+      busy = false;
+      if (name === REMOTE) {
+        console.error('city zoom: WebGL refused the zoom globe; remote stays on the globe', err);
+        city = null;
+        root.classList.remove('cz-open', 'cz-remote');
+        root.dataset.cityZoom = 'off';
+        page.release();
+        if (l) l.start();
+        return false;
+      }
       console.error('city zoom: WebGL refused the zoom globe, opening the page directly', err);
       location.assign(workAddress(name));
       return false;
     }
-    Object.assign(S, startFrom(), { globeAlpha: 0, denseAlpha: 0, morph: 0, solid: 0 });
+    Object.assign(S, startFrom(), { globeAlpha: 0, denseAlpha: 0, morph: 0, solid: 0 }, SOLAR_START);
     view.startScale = S.scale;
     // let the zoom globe draw a few frames while still invisible, then swap it for the page's
     // globe in one go (both show the same picture, so nothing moves)
@@ -407,40 +489,51 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
     globeCanvas.style.opacity = '1';
     page.hide();
 
-    mountWork(section);
-    aimDots();
-    tl = build(name, { ...S });
-    if (push) history.pushState({ cz: name }, '', workAddress(name));
+    if (name === REMOTE) {
+      tl = buildRemote({ ...S });
+      if (push) history.pushState({ cz: REMOTE }, '', `${location.pathname}${location.search}#remote`);
+    } else {
+      mountWork(section);
+      aimDots();
+      tl = build(name, { ...S });
+      if (push) history.pushState({ cz: name }, '', workAddress(name));
+    }
     busy = false;
-    if (isReduced()) { tl.progress(1); arrived(); } else tl.play();
+    if (instant || isReduced()) { tl.progress(1); arrived(); } else tl.play();
     return true;
   }
 
   function reverse() {
     if (!tl || busy) return;
+    const wasResting = root.dataset.cityZoom === REMOTE;
     root.dataset.cityZoom = 'moving';
-    if (isReduced()) { tl.progress(0); left(); } else tl.reverse();
+    stopOrbit();
+    if (isReduced()) { tl.progress(0); left(); return; }
+    // remote: the planets wind back to where they started, then the zoom plays in reverse
+    if (wasResting && S.orbit > 0) {
+      gsap.to(S, { orbit: 0, duration: Math.min(1.2, 0.4 + S.orbit / 30), ease: 'power2.inOut', onUpdate: drawDots, onComplete: () => tl && tl.reverse() });
+    } else tl.reverse();
   }
   // our own history step: the browser's back plays it (popstate below); otherwise go back here
   function goBack() {
-    if (history.state && history.state.cz === city) history.back();
-    else { history.replaceState(null, '', home || location.pathname); reverse(); }
+    if (history.state && history.state.cz === city && !history.state.entry) history.back();
+    else { history.replaceState(null, '', (home || location.pathname).replace(/#remote$/, '#locations')); reverse(); }
   }
 
   addEventListener('popstate', (e) => {
     const want = e.state && e.state.cz;
-    if (want && CITIES[want] && !city) play(want, { push: false });
+    if (want && (CITIES[want] || want === REMOTE) && !city) play(want, { push: false });
     else if (!want && city) reverse();
   });
   addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && city && root.dataset.cityZoom === 'work') goBack();
+    if (e.key === 'Escape' && city && (root.dataset.cityZoom === 'work' || root.dataset.cityZoom === REMOTE)) goBack();
   });
   let resizeTimer;
   addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
-      if (!city) return;
-      if (root.dataset.cityZoom === 'work') rebuild();
+      if (!city) { measure(); return; }
+      if (root.dataset.cityZoom === 'work' || root.dataset.cityZoom === REMOTE) rebuild();
       else dirty = true;                        // finished by arrived(); a reverse ends at the page anyway
     }, 250);
   });
@@ -458,5 +551,5 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, isReduced }) {
 
   // for checking frames in a test browser
   window.CZ = { S, play, reverse, cityAt, get tl() { return tl; }, get globe() { return globe; } };
-  return { play, cityAt, isOpen: () => city !== null };
+  return { play, back: goBack, cityAt, current: () => city };
 }

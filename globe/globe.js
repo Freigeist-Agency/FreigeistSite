@@ -7,7 +7,7 @@
 // only switch the background. Picking "nbo" / "cgn", or clicking a city's dot, plays the city
 // zoom into that city's work page (city-zoom.js).
 import createGlobe from '../js/vendor/cobe/0.6.3-dots/cobe.esm.js';
-import { createCityZoom, CITIES } from './city-zoom.js';
+import { createCityZoom, CITIES, REMOTE } from './city-zoom.js';
 const canvas = document.getElementById("loc-canvas");
 if (canvas) {
   const NAIROBI = CITIES.nairobi, COLOGNE = CITIES.cologne;
@@ -210,6 +210,7 @@ if (canvas) {
     },
     look: LOOK,
     fadeOut: ['.loc-word', '.loc-place', '.loc-info', '.loc-mode', '.logo-block', '.menu-btn', '.nav-de'],
+    fadeOutRemote: ['.loc-word'],
     isReduced: isReducedMotion,
   });
   const playCity = (name, btn) => {
@@ -225,7 +226,13 @@ if (canvas) {
   };
   on('.loc-nbo', () => pick('nairobi', document.querySelector('.loc-nbo')));
   on('.loc-cgn', () => pick('cologne', document.querySelector('.loc-cgn')));
-  on('.loc-remote', () => { focus = null; showInfo('remote'); });
+  // remote: zoom out to the solar system, and back again on a second press
+  on('.loc-remote', () => {
+    focus = null;
+    if (zoom && zoom.current() === REMOTE) { zoom.back(); return; }
+    showInfo('remote');
+    if (zoom) zoom.play(REMOTE, { opener: document.querySelector('.loc-remote') });
+  });
 
   // --- day / night: one switch; the background follows the attribute on <html> (globe.css) ---
   const modeBtn = document.querySelector('.loc-mode');
@@ -242,7 +249,7 @@ if (canvas) {
   // --- /globe/#locations (the work pages' way back) opens at the locations section ---
   // The frames are measured again whenever the layout settles (ScrollTrigger refresh), so it
   // jumps there again after each refresh until the visitor scrolls by themselves.
-  if (location.hash === '#locations') {
+  if (location.hash === '#locations' || location.hash === '#remote') {
     const ST = window.ScrollTrigger;
     const goToLocations = () => {
       const frames = window.V2 && window.V2.frames, lenis = window.WFM && window.WFM.lenis;
@@ -256,7 +263,16 @@ if (canvas) {
     ['wheel', 'touchstart', 'keydown'].forEach((t) => addEventListener(t, stop, { passive: true }));
     setTimeout(stop, 15000);
     goToLocations();
-    if (document.readyState === 'complete') setTimeout(goToLocations, 300);
-    else addEventListener('load', () => setTimeout(goToLocations, 300), { once: true });
+    // #remote (a reload or a shared link) opens the solar system straight away, once settled
+    const openRemote = () => {
+      if (location.hash !== '#remote' || !zoom) return;
+      history.replaceState({ cz: REMOTE, entry: true }, '', location.href);
+      showInfo('remote');
+      pressed(document.querySelector('.loc-remote'));
+      zoom.play(REMOTE, { push: false, instant: true });
+    };
+    const settle = () => setTimeout(() => { goToLocations(); setTimeout(openRemote, 300); }, 300);
+    if (document.readyState === 'complete') settle();
+    else addEventListener('load', settle, { once: true });
   }
 }
