@@ -663,7 +663,7 @@ html:not(.motion) .foot-word { top: calc(17700 * var(--u)); }
 .foot-col-1 { --x: 10; }
 .foot-col-2 { --x: 510; }
 .foot-col-3 { --x: 1011; }
-.motion .foot-mail, .motion .foot-col { opacity: 0; }   /* v2.js fades them in */
+.motion .foot-mail, .motion .foot-col { opacity: 0; visibility: hidden; }   /* hidden, not just clear, so they take no clicks before they show */   /* v2.js fades them in */
 html:not(.motion) .foot-mail { --y: 17600; }
 html:not(.motion) .foot-col  { --y: 17900; }
 html:not(.motion) .loc-globe { --y: 17200; }
@@ -872,6 +872,9 @@ html.menu-open .menu { transform: translateY(0); }
   will-change: transform;
 }
 .m-card:focus-visible { outline: 2px solid var(--sunbeam); outline-offset: 2px; }
+/* each card shows a short clip of its section (menu.js), filling the card */
+.menu .m-card { overflow: hidden; }
+.m-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 
 /* navbar right (Figma 63:394): "de" and "menu", 24 px underlined, flipping colour over the
    page. Their left edges sit 108 and 65 in from the right edge of the frame (1404 / 1447 of 1512),
@@ -1028,3 +1031,218 @@ html:not(.motion) .lines { display: none; }
   mix-blend-mode: hard-light;          /* unlike soft-light it also shows on pure black (boxes, menu) */
   opacity: 0.25;                       /* a quarter: present everywhere, never noisy */
 }
+
+/* "show more" (Figma 208:6): 64 px, underlined, centred under the last project's card (centre 755.5,
+   top 880), flipping colour like the other words. v2.js shows it only while the last project is
+   in focus; on phones it sits under the card's labels. */
+.show-more {
+  --ax: 0.5; --ay: 0.5; --x: 755.5; --y: 880;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  translate: -50% 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: calc(64 * var(--u));
+  line-height: normal;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: #fff;
+  mix-blend-mode: difference;
+  text-decoration: underline;
+  text-decoration-thickness: 3.5%;
+  text-underline-position: from-font;
+  cursor: pointer;
+}
+.motion .show-more { visibility: hidden; opacity: 0; }
+html:not(.motion) .show-more { display: none; }
+.show-more:focus-visible { outline: 2px solid var(--sunbeam); outline-offset: 6px; }
+@media (max-width: 767px) {
+  .show-more { --x: 410; --y: 720; font-size: calc(96 * var(--u)); }
+}
+
+/* the process steps' video boxes wait in place fully transparent until their step; they are
+   decoration only, so they never take clicks meant for what shows on screen (2026-11-22: they
+   were catching clicks on "show more") */
+.ex-box, .pb { pointer-events: none; }
+
+/* ---- "our. scope." (Figma 145:464 -> 152:537, 2026-11-22). The Figma frames are 1079 tall, so
+   heights are taken from their middle (539.5) onto ours (491): y - 48.5. "our." and "scope." are
+   207 px, centred in 1512-wide boxes at -588 and 483 (the start frame); v2.js slides each to the
+   middle of the screen. The video box is 709 x 509 at 402 / 236.5 and grows (scale) to 942 x 675
+   in the same middle, darkening by 60% (measured from Figma's render). ---- */
+.os-word, .os-video {
+  --ax: 0.5; --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  margin: 0;
+}
+.os-word {
+  width: calc(1512 * var(--u));
+  font-size: calc(207 * var(--u));
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--platinum);
+  mix-blend-mode: difference;
+}
+.os-our   { --x: -588; --y: 28; }       /* baseline 251.7 - 48.5 - 0.8465 x 207 */
+.os-scope { --x: 483;  --y: 718.5; }
+/* 2026-11-23: the start is now the FREIGEIST mask (Figma 145:464) and the words only show in the
+   end frame (Figma 152:537): "our." and "scope." 207 px, centred at 645.6 and 866.4 (boxes at
+   -110.4 / +110.4), baselines 494.2 and 618.7 (y - 48.5). Line-height normal so the "p" is not
+   clipped by its mask: top = baseline - 0.921 em. They rise in out of their masks (v2.js). */
+.motion .os-word { line-height: normal; }
+.motion .os-our   { --x: -110.4; --y: 303.6; }
+.motion .os-scope { --x: 110.4;  --y: 428.1; }
+/* the video fills the screen from the start, behind the mask */
+.motion .os-video { left: 0; top: 0; width: 100%; height: 100svh; }
+/* the video is cut to the wordmark's letters (index.html, #os-clip; v2.js places and zooms them
+   and drops the cut once the zoom has filled the screen), so the page and its lines show around them */
+.motion .os-video { clip-path: url(#os-clip); }
+.os-defs { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
+/* placeholder client logos under "our. scope." (2026-11-23; not in Figma yet): a row across the
+   screen, 60 high, its middle at 880 (y 851 - 909), on the darkened video. Each placeholder is a
+   160 x 60 outline with "logo" in it, 80 apart; v2.js runs the row right to left, endlessly. */
+.os-logos {
+  position: absolute; left: 0; width: 100%;
+  top: calc(0.5 * (100svh - 982 * var(--u)) + 851 * var(--u));
+  height: calc(60 * var(--u));
+  overflow: hidden; pointer-events: none;
+  color: var(--platinum);
+  visibility: hidden;                  /* shown with "our. scope." (v2.js) */
+}
+.os-logos-track, .os-logos-copy { display: flex; width: max-content; height: 100%; }
+.os-logo {
+  flex: none;
+  width: calc(160 * var(--u)); height: 100%;
+  margin-right: calc(80 * var(--u));
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid currentColor; opacity: 0.6;
+  font-size: max(10px, 16 * var(--u)); letter-spacing: -0.02em;
+}
+html:not(.motion) .os-logos { display: none; }
+@media (max-width: 767px) {
+  /* phones: under "scope.", a little bigger relative to the narrow canvas */
+  .os-logos { top: calc(0.5 * (100svh - 982 * var(--u)) + 640 * var(--u)); height: calc(90 * var(--u)); }
+  .os-logo  { width: calc(220 * var(--u)); margin-right: calc(60 * var(--u)); }
+}
+.os-video {
+  --x: 402; --y: 236.5;
+  width: calc(709 * var(--u));
+  height: calc(509 * var(--u));
+  overflow: hidden;
+  background: var(--void);
+  pointer-events: none;
+}
+.os-vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.os-shade { position: absolute; inset: 0; background: var(--void); opacity: 0; }
+html:not(.motion) .os-word, html:not(.motion) .os-video { --ay: 0; }
+html:not(.motion) .os-our   { --y: 3600; }
+html:not(.motion) .os-video { --y: 3800; }
+html:not(.motion) .os-scope { --y: 4300; }
+/* phones: the words in 780-wide boxes at the margins ("our." left, "scope." right); the video
+   centred, 560 x 402 growing to the full 780 */
+@media (max-width: 767px) {
+  .os-word  { width: calc(780 * var(--u)); }
+  .os-our   { --x: 20; text-align: left; }
+  .os-scope { --x: 20; text-align: right; }
+  .os-video { --x: 130; --y: 290; width: calc(560 * var(--u)); height: calc(402 * var(--u)); }
+  /* the end frame on phones: the words 170 px (as the workshops word), centred a little apart */
+  .motion .os-word  { width: calc(820 * var(--u)); font-size: calc(170 * var(--u)); text-align: center; }
+  .motion .os-our   { --x: -60; --y: 283.4; }
+  .motion .os-scope { --x: 60;  --y: 385.4; }
+  .motion .os-video { left: 0; top: 0; width: 100%; height: 100svh; }
+}
+
+/* ---- workshops (Figma 73:484 -> 73:485 -> ..., 2026-11-22), on the our. scope. video once it fills
+   the screen. Those frames are ~1083 tall: heights are taken from their middle (y - 51 / y - 50).
+   The big word: 200 px, centred, middle at 434.5; one per frame, all in the same spot (v2.js swaps
+   them halfway through each sideways move). Each frame's three columns sit in a panel the width of
+   the screen; v2.js slides the panels sideways. Columns are 476 wide, centred at 238 / 757 / 1265
+   (1262 in the second frame); an item is a 24 px title and a 14 px line, items 59.8 apart.
+   Every line sits in a mask (.ws-mask) it can rise out of. ---- */
+.ws-word, .ws-col {
+  --ax: 0.5; --ay: 0.5;
+  position: absolute;
+  left: calc(var(--ax) * (100% - var(--fw) * var(--u)) + var(--x) * var(--u));
+  top: calc(var(--ay) * (100svh - 982 * var(--u)) + var(--y) * var(--u));
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  letter-spacing: -0.06em;
+  font-weight: 400;
+}
+.ws-mask { display: block; overflow: hidden; }
+.ws-in { display: block; }
+.ws-swap { display: block; }   /* a big word's second layer: the entrance moves .ws-in, the swap between frames moves this */
+.ws-word {
+  --x: 0; --y: 319.5;                   /* 434.5 - half its 230 line */
+  width: calc(1512 * var(--u));
+  font-size: calc(200 * var(--u));
+  line-height: normal;
+  color: #fff;
+  mix-blend-mode: difference;
+}
+.ws-panel { position: absolute; inset: 0; pointer-events: none; }
+.ws-col {
+  width: calc(476 * var(--u));
+  font-size: max(12px, 24 * var(--u));
+  line-height: normal;
+  color: var(--platinum);
+}
+.ws-item { display: block; margin-bottom: calc(16.1 * var(--u)); }   /* the blank 14 px line between items */
+.ws-col .ws-sub { font-size: max(9px, 14 * var(--u)); }
+.ws-panel-0 .ws-col-1 { --x: 0;    --y: 721.9; }
+.ws-panel-0 .ws-col-2 { --x: 519;  --y: 728; }
+.ws-panel-0 .ws-col-3 { --x: 1027; --y: 728; }
+.ws-panel-1 .ws-col-1, .ws-panel-2 .ws-col-1, .ws-panel-3 .ws-col-1 { --x: 0;    --y: 655; }
+.ws-panel-1 .ws-col-2, .ws-panel-2 .ws-col-2, .ws-panel-3 .ws-col-2 { --x: 519;  --y: 651.2; }
+.ws-panel-1 .ws-col-3, .ws-panel-2 .ws-col-3, .ws-panel-3 .ws-col-3 { --x: 1024; --y: 651.2; }
+/* the last frame (Figma 145:531, 1079 tall: y - 48.5): the video scales down into a 827 x 593 box at
+   343 / 197.5 (v2.js); "(click me)" 207 px centred (baseline 565.7) and "to get
+   started." 48 px above it (baseline 402), both flipping colour. Line-height normal (top = baseline
+   - 0.921 em) so the brackets are not clipped by their masks. */
+.ws-word.ws-click { --y: 375.1; font-size: calc(207 * var(--u)); text-decoration: none; pointer-events: none; }
+.ws-word.ws-pre   { --y: 357.8; font-size: calc(48 * var(--u)); }
+.ws-click.is-live { pointer-events: auto; cursor: pointer; }   /* clickable only while it shows (v2.js) */
+html:not(.motion) .ws-word, html:not(.motion) .ws-panel { display: none; }
+/* phones: the big word smaller to fit; each frame's columns stacked in the middle */
+@media (max-width: 767px) {
+  .ws-word  { --x: 0; width: calc(820 * var(--u)); font-size: calc(170 * var(--u)); --y: 330; }
+  .ws-col   { width: calc(780 * var(--u)); --x: 20 !important; }
+  .ws-panel-0 .ws-col-1 { --y: 620; }
+  .ws-panel-0 .ws-col-2 { --y: 700; }
+  .ws-panel-0 .ws-col-3 { --y: 780; }
+  .ws-panel-1 .ws-col-1, .ws-panel-2 .ws-col-1, .ws-panel-3 .ws-col-1 { --y: 560; }
+  .ws-panel-1 .ws-col-2, .ws-panel-2 .ws-col-2, .ws-panel-3 .ws-col-2 { --y: 770; }
+  .ws-panel-1 .ws-col-3, .ws-panel-2 .ws-col-3, .ws-panel-3 .ws-col-3 { --y: 980; }
+  .ws-word.ws-click { font-size: calc(150 * var(--u)); --y: 425; }
+  .ws-word.ws-pre   { font-size: calc(48 * var(--u)); --y: 380; }
+}
+
+/* the workshops frames' own background videos (frames 2-4: blaustrand, joline meens, vitali koch;
+   2026-11-22): full screen behind each panel's columns, darkened like the first frame's, and moving
+   with the panel. The last one scales down into the call to action's box (v2.js). */
+.ws-bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--void);
+}
+.ws-bgvid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.ws-bgshade { position: absolute; inset: 0; background: var(--void); opacity: 0.6; }
+
+/* no scrollbar (2026-11-23): the page still scrolls (wheel, keys, touch), but the browser's bar
+   is not drawn, in every browser */
+html { scrollbar-width: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; width: 0; height: 0; }

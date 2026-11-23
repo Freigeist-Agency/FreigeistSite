@@ -8,6 +8,9 @@
      the middle shows which page it is.
    - Clicking a side preview brings it to the middle; clicking the middle one closes the menu
      and scrolls to that part of the page (until the separate pages exist).
+   - Each preview is a short silent clip of its section of this page (2026-11-23, recorded from
+     the page itself: videos/menu-<name>.mp4). They load only when the menu first opens and play
+     only while it is open and the card is on screen; with reduced motion they stay still.
    Measured on open and on resize only; the animation loop runs only while the row moves. */
 (function () {
   'use strict';
@@ -20,11 +23,13 @@
   const nameEl = menu.querySelector('.m-name');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // placeholder previews: page name and the frame of this page it jumps to for now
+  // the page's sections: name, the frame of this page it jumps to, its preview clip
   const PAGES = [
-    ['home', '12'], ['portfolio', 'project'], ['services', 'examine'],
-    ['about', 'about'], ['locations', 'locations'], ['contact', 'final'],
+    ['home', '12', 'home'], ['work', 'featured', 'work'], ['scope', 'scope', 'scope'],
+    ['about', 'statement', 'about'], ['services', 'examine', 'services'],
+    ['locations', 'locations', 'locations'], ['contact', 'final', 'contact'],
   ];
+  const clip = (name) => '../videos/menu-' + name;
 
   // Figma sizes, in frame units (x --u)
   const SMALL_W = 175, SMALL_H = 103, BIG_W = 360, BIG_H = 211, PITCH = 185, PUSH = 92.5;
@@ -55,6 +60,13 @@
         c.className = 'm-card';
         const page = PAGES[i % PAGES.length][0];
         c.setAttribute('aria-label', page);
+        const v = document.createElement('video');
+        v.className = 'm-vid';
+        v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'none';
+        v.setAttribute('aria-hidden', 'true');
+        v.dataset.src = clip(PAGES[i % PAGES.length][2]) + '.mp4';
+        v.poster = clip(PAGES[i % PAGES.length][2]) + '_poster.jpg';
+        c.appendChild(v);
         c.addEventListener('click', () => clickCard(i));
         slider.appendChild(c);
         cards.push(c);
@@ -92,12 +104,26 @@
     if (nameEl.textContent !== PAGES[mid][0]) nameEl.textContent = PAGES[mid][0];
   }
 
+  // the clips: the cards on screen play while the menu is open, the rest wait
+  function playVisible() {
+    const isOpen = html.classList.contains('menu-open');
+    const reach = W / 2 / (PITCH * su) + 1;              // slots from the middle that can show
+    cards.forEach((c, i) => {
+      const v = c.firstChild;
+      if (isOpen && !reduced && Math.abs(slotOf(i)) <= reach) {
+        if (!v.src) v.src = v.dataset.src;
+        if (v.paused) v.play().catch(() => {});
+      } else if (!v.paused) v.pause();
+    });
+  }
+
   // the loop: eases the row towards its target, stops itself when it gets there
   function tick() {
     const d = target - offset;
     offset = Math.abs(d) < 0.0005 || reduced ? target : offset + d * 0.12;
     render();
     raf = offset === target ? 0 : requestAnimationFrame(tick);
+    if (!raf) playVisible();
   }
   const go = () => { if (!raf) raf = requestAnimationFrame(tick); };
   // after the input pauses, settle with a whole preview in the middle
@@ -153,6 +179,7 @@
     window.addEventListener('touchend', onTouchEnd);
     window.addEventListener('keydown', onKey);
     exit.focus({ preventScroll: true });
+    playVisible();
   }
   function close() {
     if (!html.classList.contains('menu-open')) return;
@@ -169,6 +196,7 @@
     cancelAnimationFrame(raf); raf = 0;
     clearTimeout(idle);
     target = offset = Math.round(target);
+    playVisible();
     btn.focus({ preventScroll: true });
   }
 
