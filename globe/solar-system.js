@@ -10,8 +10,8 @@ const TILT = 0.36;                             // how flat the orbits look (thei
 const FRED_URL = new URL('../v2/img/loader-icon.svg', import.meta.url);   // FRED.'s outline, 1434 square
 const FRED_GRID = 64;                          // FRED.'s dots across his width
 // Sunbeam Yellow (#FFEA00) after the canvas's flip: drawn as itself on the night background, as its
-// complement on the day one (white minus yellow), so his eyes always come out yellow
-const EYES = { night: '#ffea00', day: '#0015ff' };
+// complement on the day one (white minus yellow), so FRED.'s eyes and the sun always come out yellow
+const YELLOW = { night: '#ffea00', day: '#0015ff' };
 
 // stylised, not to scale: size (of the largest orbit), where each starts (angle) and how fast it goes
 const PLANETS = [
@@ -64,7 +64,7 @@ export function createSolarSystem() {
     const sunR = Math.max(12, 0.085 * rMax);
     const inner = sunR * 2.3;
     L = {
-      vw, vh, cx: vw / 2, cy: vh * 0.56, rMax, sunR,
+      vw, vh, cx: vw / 2, cy: vh * 0.62, rMax, sunR,
       planets: PLANETS.map((p, i) => {
         const R = inner + Math.pow(i / (PLANETS.length - 1), 0.85) * (rMax - inner);
         return { ...p, R, r: Math.max(3, p.size * rMax), speed: 0.06 / Math.pow(R / rMax, 1.5) };
@@ -122,36 +122,65 @@ export function createSolarSystem() {
     ball(ctx, x, y, p.r, a);
   }
 
+  // How much of FRED. shows at a point: he rises from behind the plane of the orbits, like a god
+  // over his galaxy. Above the plane's far edge he shows fully; between its far and near edges he is
+  // behind the plane (seen faintly through it); below its near edge, and below the plane's level
+  // beside it, he is hidden.
+  function behindPlane(x, y) {
+    const Rx = L.rMax, Ry = L.rMax * TILT, dx = (x - L.cx) / Rx;
+    if (Math.abs(dx) >= 1) return y < L.cy ? 1 : 0;
+    const h = Ry * Math.sqrt(1 - dx * dx);
+    if (y < L.cy - h) return 1;
+    return y < L.cy + h ? 0.3 : 0;
+  }
+  function drawFred(ctx, S, yellow) {
+    const H = Math.min(1.05 * L.vh, 1.1 * L.vw), W = H;   // his box is square
+    const rise = 1 - S.fred;                               // 1: still below the plane, 0: risen
+    // risen: his head near the top and his lower body behind the plane (on phones, where the
+    // system is small, he comes lower so the plane still cuts across him)
+    const rest = Math.max(0.02 * L.vh, L.cy - 0.85 * H);
+    const left = L.cx - W / 2, top = rest + rise * 0.62 * L.vh;
+    const dot = (H / FRED_GRID) * 0.27;
+    const a = 0.42 * Math.min(1, S.fred * 2);
+    for (const [u, v] of fred.body) {
+      const x = left + u * W, y = top + v * H, k = behindPlane(x, y);
+      if (k <= 0) continue;
+      ctx.globalAlpha = a * k;
+      ctx.beginPath();
+      ctx.arc(x, y, dot, 0, TAU);
+      ctx.fill();
+    }
+    if (S.eyes <= 0.01) return;
+    // the eyes burn: a soft glow around them that breathes while the planets go round
+    const glow = S.eyes * (0.85 + 0.15 * Math.sin(S.orbit * 2.4));
+    ctx.fillStyle = yellow;
+    for (const [u, v] of fred.eyes) {
+      const x = left + u * W, y = top + v * H, k = behindPlane(x, y);
+      if (k <= 0) continue;
+      ctx.globalAlpha = 0.07 * glow * k;
+      ctx.beginPath();
+      ctx.arc(x, y, dot * 3.2, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = glow * k;
+      ctx.beginPath();
+      ctx.arc(x, y, dot * 0.9, 0, TAU);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#fff';
+  }
+
   function draw(ctx, S, mode) {
     if (!L) return;
+    const yellow = YELLOW[mode] || YELLOW.day;
     ctx.fillStyle = '#fff';
-    // FRED., huge and faint behind it all, rising a little as he appears
-    if (fred && S.fred > 0.01) {
-      const H = Math.min(0.9 * L.vh, 0.95 * L.vw), W = H;   // his box is square: phones fit his width
-      const left = L.cx - W / 2, top = (L.vh - H) / 2 + (1 - S.fred) * 0.06 * L.vh;
-      const dot = (H / FRED_GRID) * 0.26;
-      ctx.globalAlpha = 0.3 * S.fred;
-      for (const [u, v] of fred.body) {
-        ctx.beginPath();
-        ctx.arc(left + u * W, top + v * H, dot, 0, TAU);
-        ctx.fill();
-      }
-      if (S.eyes > 0.01) {
-        ctx.fillStyle = EYES[mode] || EYES.day;
-        ctx.globalAlpha = S.eyes;
-        for (const [u, v] of fred.eyes) {
-          ctx.beginPath();
-          ctx.arc(left + u * W, top + v * H, dot * 0.9, 0, TAU);
-          ctx.fill();
-        }
-        ctx.fillStyle = '#fff';
-      }
-    }
+    if (fred && S.fred > 0.01) drawFred(ctx, S, yellow);
     // the orbits, each drawn round from the front, the inner ones first
     L.planets.forEach((p, i) => ring(ctx, L.cx, L.cy, p.R, TILT, clamp01(S.rings * 1.6 - i * 0.08), 0.4));
     // the far side of the orbits, then the sun, then the near side
     for (const p of L.planets) if (!placeOf(p, S.orbit).front) planet(ctx, p, S);
+    ctx.fillStyle = yellow;                     // the sun in Freigeist yellow
     ball(ctx, L.cx, L.cy, L.sunR * S.sun, S.sun, false);
+    ctx.fillStyle = '#fff';
     for (const p of L.planets) if (placeOf(p, S.orbit).front) planet(ctx, p, S);
     ctx.globalAlpha = 1;
   }

@@ -356,9 +356,9 @@ export function createCityZoom({ pageCanvas, page, look, fadeOut, fadeOutRemote,
       .fromTo(S, { earth: 0 }, { earth: 1, duration: 0.25 }, 1.3)
       .fromTo(S, { globeAlpha: 1 }, { globeAlpha: 0, duration: 0.25 }, 1.4)   // cobe blurs when this small
       .fromTo(S, { planets: 0 }, { planets: 1, duration: 0.6 }, 1.4)
-      .fromTo(S, { fred: 0 }, { fred: 1, duration: 1.2, ease: 'power2.out' }, 1.8)
-      .fromTo(S, { eyes: 0 }, { eyes: 1, duration: 0.2 }, 2.9)
-      .fromTo(S, { eyes: 1 }, { eyes: 0.85, duration: 0.5, immediateRender: false }, 3.1);
+      // FRED. rises from behind the plane of the orbits, slow and heavy, then his eyes ignite
+      .fromTo(S, { fred: 0 }, { fred: 1, duration: 2.2, ease: 'power2.inOut' }, 1.6)
+      .fromTo(S, { eyes: 0 }, { eyes: 1, duration: 0.15 }, 3.5);   // then they breathe (solar-system.js)
     return t;
   }
   // remote at rest: the planets keep going round (paused for reduced motion)
