@@ -6,7 +6,8 @@
   // ---- base setup (webflow-motion Tier 0) ----
   gsap.registerPlugin(ScrollTrigger);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  window.WFM = { reduced, lenis: null };
+  // fine: a mouse (FRED, the ghost cursor in fred.js, reads it, as on the live homepage)
+  window.WFM = { reduced, fine: matchMedia('(pointer: fine)').matches, lenis: null };
   let rt; window.WFM.refresh = () => { clearTimeout(rt); rt = setTimeout(() => ScrollTrigger.refresh(), 200); };
   addEventListener('load', () => ScrollTrigger.refresh());
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
@@ -44,9 +45,14 @@
 
   const space = document.querySelector('.scroll-space');
   const we = ['.we-word', '.we-list'];
-  const projs = [...document.querySelectorAll('.proj')];
-  const names = [...document.querySelectorAll('.proj-name')];
-  const tags = [...document.querySelectorAll('.proj-tags')];
+  // the featured projects; read again on every build, since "show more" adds cards (2026-11-22)
+  let projs, names, tags;
+  const readProjects = () => {
+    projs = [...document.querySelectorAll('.proj')];
+    names = [...document.querySelectorAll('.proj-name')];
+    tags = [...document.querySelectorAll('.proj-tags')];
+  };
+  readProjects();
 
   // Where a project sits, in Figma pixels, n places from the one in focus:
   // n = 0 is the big card; n > 0 the strips below (coming), n < 0 the strips above (seen).
@@ -67,9 +73,8 @@
   }
   const track = document.querySelector('.featured-track');
   const firstCopy = track.querySelector('.featured-copy');
-  let tl, marquee, ctaPlay, endPlay, stPlay, stepPlays = [], projPlays = [];
+  let tl, marquee, logoRun, logoPlay, ctaPlay, endPlay, stPlay, osPlay, wsPlay, wsLive, wsBgPlays = [], stepPlays = [], projPlays = [];
   const stVid = document.querySelector('.st-vid');
-  const projVideos = [...document.querySelectorAll('.proj-video')];
   const stepVideos = [...document.querySelectorAll('.step-video')];
   const ctaVideo = document.querySelector('.cta-video video');
   const endVideo = document.querySelector('.end-video');
@@ -158,7 +163,13 @@
       g.appendChild(p);
       linesSvg.appendChild(g);
       groups.push([g, s]);
-      tl.fromTo(p, { strokeDashoffset: len + 2 }, { strokeDashoffset: 0, duration: end - start, immediateRender: false }, start);
+      // nothing may run past the end of the scroll: the timeline would grow longer than the
+      // scroll and every animation would drift ahead of it. A line still drawing at the end
+      // (under the footer by then) stops where it has got to.
+      const stop = Math.min(end, total);
+      if (stop <= start) return;                 // starts after the end: never seen
+      const offsetAtStop = (len + 2) * (1 - (stop - start) / (end - start));
+      tl.fromTo(p, { strokeDashoffset: len + 2 }, { strokeDashoffset: offsetAtStop, duration: stop - start, immediateRender: false }, start);
     };
     // diagonals at a fixed slant, bouncing from side to side down to the end. No line starts or
     // turns on the page (2026-11-22): each starts just beyond a side of the screen and bounces
@@ -300,8 +311,14 @@
 
   function build() {
     if (tl) { tl.scrollTrigger.kill(); tl.kill(); }
-    gsap.set(['.logo-block', '.scroll-hint', '.wm', ...we, '.portfolio', '.bg-video', '.featured', '.work', ...projs, '.st-help', '.st-big', '.st-video', '.st-copy', '.stat', '.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap', '.cta-video', '.cta-sub', '.cta-click', '.ex-box', '.ex-word', '.ex-copy', '.ex-services', '.pw', '.pc', '.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras, '.end-bg', '.end-video', '.foot-word', '.foot-mail', '.foot-col'], { clearProps: 'transform' });
+    readProjects();
+    gsap.set(['.logo-block', '.scroll-hint', '.wm', ...we, '.portfolio', '.bg-video', '.featured', '.work', ...projs, '.os-our', '.os-scope', '.os-video', '.os-logos', '.ws-word', '.ws-panel', '.st-help', '.st-big', '.st-video', '.st-copy', '.stat', '.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap', '.cta-video', '.cta-sub', '.cta-click', '.ex-box', '.ex-word', '.ex-copy', '.ex-services', '.pw', '.pc', '.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras, '.end-bg', '.end-video', '.foot-word', '.foot-mail', '.foot-col'], { clearProps: 'transform' });
     gsap.set('.end-video', { clearProps: 'width,height,left,top' });   // the footer shrink sets these
+    gsap.set('.os-shade', { clearProps: 'opacity' });                  // our. scope. darkening
+    gsap.set('.os-video', { clearProps: 'width,height' });             // ... and its fill
+    gsap.set(['.os-our', '.os-scope', '.ws-panel', '.ws-col', '.os-video'], { clearProps: 'opacity,visibility' });
+    gsap.set('.os-video', { clearProps: 'clip-path' });                // ... and its letter cut   // ... its words, panels, video
+    gsap.set('.ws-bg', { clearProps: 'width,height,transform' });       // the frames' own videos
     lastLogoT = -1;                                                  // the morph redraws at the new size
     // the block keeps Figma's 491 x 208 at the top (the loader's strip in Figma 203:6 is that tall;
     // the screen-shaped block of earlier on 2026-11-20 was dropped with it)
@@ -390,14 +407,61 @@
     const dOut = oy + Math.max(P.y + P.h, 720) * u + 10 * u;       // lowest card / label off the top
     const sFeat = sOut + dOut;
     const dFeat = (287 + 10) * u;
-    const sSt = sOut + Math.max(0, oy + (P.y + P.h) * u - vh / 2);  // card bottom at mid-screen
+    // "our. scope." (Figma 145:464 -> 152:537, 2026-11-22), between the projects and the statement:
+    // 1. it rises in from below at scroll speed, starting where the statement used to (the last
+    //    card's bottom edge at the middle of the screen), overlapping the cards and "featured work."
+    //    leaving; 2. "our." and "scope." slide to the middle of the screen while the video grows
+    //    942 / 709 and darkens 60%; 3. it scrolls up and away while the statement rises in.
+    // Places are measured here (transforms cleared), nothing per frame.
+    // Rebuilt 2026-11-23 (Figma 145:464 -> 210:46 -> 210:66 -> 210:86 -> 152:537):
+    // 1. the FREIGEIST mask (page colour, letters cut out, the video behind) rises in from below at
+    //    scroll speed, starting where the statement used to (the last card's bottom edge at the
+    //    middle of the screen);
+    // 2. it zooms into the "i" of "geist" until the video fills the screen, which darkens 60%
+    //    near the end; the zoom is even (the same factor per scroll px);
+    // 3. "our." and "scope." rise in (as the workshops text did): the first frame of the sideways
+    //    scroll. The zoom's end (how far until the "i" covers this screen) is measured here.
+    const os = ['.os-our', '.os-scope', '.os-video', '.os-logos'];
+    const Wos = document.querySelector('.stage').clientWidth;
+    const osVid = document.querySelector('.os-video');
+    // pages built from an older copy of this page (the /globe page) have no our. scope. section:
+    // it then takes no scroll at all, and the statement follows the projects as it used to
+    const hasOS = !!(osVid && document.querySelector('.os-letters') && document.querySelector('.ws-panel'));
+    const osBottom = vh;                                             // everything is full screen
+    const osZoom = hasOS ? osMaskLayout(Wos, vh, u, small) : { p: 0, draw() {} };
+    const sOS = sOut + Math.max(0, oy + (P.y + P.h) * u - vh / 2);  // card bottom at mid-screen
+    const dOS = hasOS ? vh + 10 * u : 0;
+    const sAB = hasOS ? Math.max(sOS + dOS, sFeat + dFeat) + hold : sOS;          // Figma 145:464, then the zoom
+    const dAB = hasOS ? 1400 * u : 0;
+    // the end frame (Figma 152:537): the words play in once the zoom is done
+    const sFill = sAB + dAB;
+    // the sideways frames: our. scope. (frame 0), then the workshops panels (Figma 73:484, 73:485,
+    // ...): after a pause to read each, the panels move sideways one screen width (at scroll speed)
+    // to the next; the big word switches halfway. The last frame, the call to action, is reached
+    // by a scale-down.
+    const wsPanels = [...document.querySelectorAll('.ws-panel')];
+    const wordsOf = (i) => [...document.querySelectorAll('.ws-word-' + i + ' .ws-swap')];   // (the entrance moves .ws-in, so the two never fight)   // a frame's big word(s)
+    const frameWords = (k) => (k === 0 ? [...document.querySelectorAll('.os-word .ws-swap')] : wordsOf(k - 1));
+    const wsRead = 0.6 * vh, dH = Wos;
+    const sH = (k) => sFill + hold + wsRead + (k - 1) * (dH + wsRead);   // move to frame k (1, 2, ...)
+    const lastWs = wsPanels.length + 1;                                  // the call to action's frame
+    const sOSx = hasOS ? sH(lastWs) + dH + wsRead : sOS;                              // after the last frame's pause, away
+    const dOSx = hasOS ? Math.max(osBottom, vh) + 10 * u : 0;                     // the full-screen video's bottom
+    // the statement follows the call to action's box (its last frame). Both move at scroll speed, so
+    // the gap between the box's bottom and "(we help you to)" stays the same while both are on
+    // screen; it was halved on 2026-11-22 (it used to start once the box's bottom passed the middle
+    // of the screen). "(we help you to)" starts 10 below the screen.
+    const boxBottom = (vh - 982 * u) / 2 + (small ? 214 + 560 : 197.5 + 593) * u;
+    const gapWas = vh + 10 * u - boxBottom + Math.max(0, Math.max(osBottom, vh) - vh / 2);
+    const sSt = hasOS ? sOSx + Math.max(0, gapWas / 2 - (vh + 10 * u - boxBottom)) : sOS;
+    const ws = ['.ws-word', '.ws-panel'];
     const dSt = vh + 10 * u - (oy + 114 * u);
     const statement = ['.st-help', '.st-big', '.st-video', '.st-copy'];
     // statement -> stretched video (Figma 137:191): the video grows from 1001 x 279 to fill the
     // width (24 from the left, 20 from the right) and 723 high, its top moving up 8; at the same
     // time, parallax: the big lines (and "(we help you to)") rise 172, the paragraph only 103.
     // The video box itself grows (not a scale), so a real video fills it instead of stretching.
-    const sStr = Math.max(sSt + dSt, sFeat + dFeat) + hold;
+    const sStr = Math.max(sSt + dSt, sOSx + dOSx) + hold;
     const dStr = 400 * u;
     const vidEl = document.querySelector('.st-video');
     const vidW0 = vidEl.offsetWidth, vidH0 = vidEl.offsetHeight;   // measured once per build
@@ -451,34 +515,18 @@
     const dPt = 385 * u;
     const sPt = sPh + dPh + hold;
     const ptSteps = caps.length - 1;
-    // last partner -> call to action (Figma 154:602): the whole about section (list,
-    // paragraph, photos, captions, "about") scrolls up and away, and the video with
-    // "(click me)" rises in right behind it, one screen at scroll speed like a normal page.
-    const sCta = sPt + ptSteps * (dPt + hold);
-    const dCta = vh + 10 * u;
+    // the order here was swapped on 2026-11-23: the process steps ("examine." ...) now come
+    // right after the partners, and the call to action after the steps, before locations.
+    // last partner -> "examine." (Figma 4:2): the whole about section (list, paragraph, photos,
+    // captions, "about") scrolls up and away while the examine frame rises in from below, one
+    // screen at scroll speed like a normal page.
     const aboutAll = ['.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap'];
-    const cta = ['.cta-video', '.cta-sub', '.cta-click'];
-    // call to action -> grown (Figma 157:604): the video scales up around its centre from 815
-    // to 1195 wide (x 1.466; on phones only enough to fill the width). The text stays, and the
-    // page stays white (Figma shows it grey there; no darkening, agreed 2026-11-20).
-    const sGrow = sCta + dCta + hold;
-    const dGrow = 400 * u;
-    const growScale = small ? 820 / 780 : 1195 / 815;
-    // grown call to action -> "examine." (Figma 4:2): the call to action scrolls up and away
-    // while the examine frame rises in from below, one screen at scroll speed.
-    const sEx1 = sGrow + dGrow + hold;
+    const sEx1 = sPt + ptSteps * (dPt + hold);
     const dEx1 = vh + 10 * u;
     const ex = ['.ex-box', '.ex-word', '.ex-copy'];
-    // phones: the white gap between the outgoing video and the incoming "examine." frame is
-    // halved (2026-11-20): the frame starts half the gap closer, moves at the same speed as
-    // the video (so the gap holds) and lands on its spot a little earlier.
-    let exStart = dEx1;
-    if (small) {
-      const cv = document.querySelector('.cta-video');
-      const ctaBottom = cv.offsetTop + cv.offsetHeight / 2 + (cv.offsetHeight * growScale) / 2;
-      const exTop = Math.min(...ex.map((s) => document.querySelector(s).offsetTop));
-      exStart = dEx1 - (exTop + dEx1 - ctaBottom) / 2;
-    }
+    const exStart = dEx1;
+    const cta = ['.cta-video', '.cta-sub', '.cta-click'];
+    const growScale = small ? 820 / 780 : 1195 / 815;
     // then into the end layout (second sketch, 2026-11-20): the video ends centred on the page,
     // 872 x 864 (size from the first sketch) at 320 / 59; "examine." slides in from the left
     // and grows to 240, left 102, baseline 252 (top 252 - 0.8465 x 240 = 48.8); the paragraph
@@ -524,22 +572,35 @@
     const paraRest = pCopies.map((s, k) => (k === 0 ? null
       : (paraTopFor(document.querySelector(s), 1) - (small ? 696.8 : 655)) * u));
     const sSteps = sEx2 + dEx2 + hold;
-    // last step -> locations (Figma 186:285): the manage step scrolls up and away while the
-    // locations frame with the globe rises in from below, one screen at scroll speed.
-    const sLoc = sSteps + (pWords.length - 1) * (dWord + dSwap + hold);
+    // last step -> call to action (Figma 154:602): the manage step scrolls up and away while
+    // the video with "(click me)" rises in right behind it, one screen at scroll speed.
+    const sCta = sSteps + (pWords.length - 1) * (dWord + dSwap + hold);
+    const dCta = vh + 10 * u;
     const lastStep = [pWords[3], pBoxes[3], pCopies[3], '.ex-services'];   // "services" leaves with the section
+    // call to action -> grown (Figma 157:604): the video scales up around its centre from 815
+    // to 1195 wide (x 1.466; on phones only enough to fill the width). The text stays, and the
+    // page stays white (Figma shows it grey there; no darkening, agreed 2026-11-20).
+    const sGrow = sCta + dCta + hold;
+    const dGrow = 400 * u;
+    // grown call to action -> locations (Figma 186:285): the call to action scrolls up and away
+    // while the locations frame with the globe rises in from below, one screen at scroll speed.
+    const sLoc = sGrow + dGrow + hold;
     const loc = ['.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras];
     // the white gap between the last video and the incoming "locations." (2026-11-20): doubled
     // on large screens (1024+), halved on phones, unchanged on tablets. Both move at scroll speed, so the gap holds while
     // they move; "locations." starts that much further (or closer) and lands on its spot.
-    const dLeave = vh + 10 * u;                 // the manage step always moves a full screen up and out
+    const dLeave = vh + 10 * u;                 // the call to action always moves a full screen up and out
     let dLoc = dLeave;
     {
-      const bx = document.querySelector(pBoxes[3]), lw = document.querySelector('.loc-word');
+      const cv = document.querySelector('.cta-video'), lw = document.querySelector('.loc-word');
       const lTop = lw.offsetTop + (0.8465 - 0.716) * parseFloat(getComputedStyle(lw).fontSize);
-      const gap0 = lTop + dLoc - (bx.offsetTop + bx.offsetHeight);
+      const ctaBottom = cv.offsetTop + cv.offsetHeight / 2 + (cv.offsetHeight * growScale) / 2;   // grown
+      const gap0 = lTop + dLoc - ctaBottom;
+      // "locations." must not show while the call to action rests mid-screen: it starts at
+      // least fully below the screen (the phone halving only shortens it down to there)
+      const locBelow = vh - Math.min(...loc.map((s) => document.querySelector(s).offsetTop)) + 2;
       const tablet = !small && matchMedia('(max-width: 1023px)').matches;   // 768-1023: kept as it was
-      dLoc += gap0 * ((small ? 0.5 : tablet ? 1 : 2) - 1);
+      dLoc = Math.max(dLoc + gap0 * ((small ? 0.5 : tablet ? 1 : 2) - 1), locBelow);
     }
     // locations -> the hero video full screen (Figma 49:163): locations stays where it is
     // (sticky) while the video rises in from below and pulls over it, one screen at scroll speed
@@ -568,6 +629,11 @@
       shrink: s5 - hold / 2, featured: s6 - hold / 2 };
     for (let k = 0; k <= steps; k++) frames['p' + (k + 1)] = sP - hold / 2 + k * (dP + hold);
     frames.project = frames.p1;
+    frames.scope = sAB - hold / 2;               // Figma 145:464, the FREIGEIST mask
+    frames.scopeZoom = sAB + 0.5 * dAB;         // halfway into the zoom (Figma 210:66 or so)
+    frames.scopeEnd = sFill + hold / 2 + 0.3 * wsRead;   // Figma 152:537, the words in
+    frames.workshops = sH(1) + dH + wsRead / 2;  // Figma 73:484
+    for (let k = 2; k <= lastWs; k++) frames['workshops' + k] = sH(k) + dH + wsRead / 2;   // Figma 73:485, ..., 145:531
     frames.statement = sStr - hold / 2;
     frames.stretch = sFull - hold / 2;
     frames.full = sZoom - hold / 2;
@@ -577,7 +643,7 @@
     for (let k = 0; k <= ptSteps; k++) frames['partner' + (k + 1)] = sPt - hold / 2 + k * (dPt + hold);
     frames.lead = frames.partner1;
     frames.cta = sGrow - hold / 2;
-    frames.grow = sEx1 - hold / 2;
+    frames.grow = sLoc - hold / 2;
     frames.examine = sEx2 - hold / 2;          // Figma 4:2
     frames.examined = sSteps - hold / 2;       // the sketch's end layout
     ['consult', 'execute', 'manage'].forEach((name, k) => {
@@ -662,10 +728,25 @@
       tl.to([names[k], tags[k]], { opacity: 0, duration: dP * 0.4 }, at)
         .to([names[k + 1], tags[k + 1]], { opacity: 1, duration: dP * 0.4 }, at + dP * 0.6);
     }
+    // "show more" (Figma 208:6): appears as the last project settles into focus, goes as the
+    // projects leave; not at all once the project list is used up
+    gsap.set('.show-more', { autoAlpha: 0 });
+    if (moreLeft() > 0) {
+      const lastIn = steps > 0 ? sP + (steps - 1) * (dP + hold) + dP : sP;
+      tl.fromTo('.show-more', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 * dP, immediateRender: false }, lastIn - 0.3 * dP)
+        .to('.show-more', { autoAlpha: 0, duration: 0.3 * dP }, sP + steps * (dP + hold));
+    }
     // last project -> statement. Each statement piece moves on its own (not inside one moving
     // box), so the paragraph's colour flip still sees the white page and the video under it.
     tl.to('.work', { y: -dOut, duration: dOut }, sOut)
       .to('.featured', { y: featUp - dFeat, duration: dFeat }, sFeat)
+      // our. scope.: the video (cut to the letters) rises in, the letters zoom into the "i" until it is gone and
+      // the video darkens; the words come in by themselves (wsPlay); later it all leaves
+      .fromTo('.os-video', { y: dOS }, { y: 0, duration: dOS }, sOS)
+      .fromTo(osZoom, { p: 0 }, { p: 1, duration: dAB, ease: 'none', onUpdate: osZoom.draw, immediateRender: false }, sAB)
+      .fromTo('.os-shade', { opacity: 0 }, { opacity: 0.6, duration: 0.25 * dAB, ease: 'sine.inOut', immediateRender: false }, sAB + 0.75 * dAB)
+      .set('.os-video', { clipPath: 'none' }, sFill)           // the 'i' covers the screen: no cut needed
+      .to([...os, ...ws], { y: `-=${dOSx}`, duration: dOSx }, sOSx)
       .fromTo(statement, { y: dSt }, { y: 0, duration: dSt }, sSt)
       // statement -> stretched video
       .to(['.st-help', '.st-big'], { y: -172 * u, duration: dStr }, sStr)
@@ -703,13 +784,8 @@
         .to(caps[k], { opacity: 0, duration: dPt * 0.4 }, at)
         .fromTo(caps[k + 1], { opacity: 0 }, { opacity: 1, duration: dPt * 0.4, immediateRender: false }, at + dPt * 0.6);
     }
-    // last partner -> call to action ("-=" moves each piece on from wherever it is by then)
-    tl.to(aboutAll, { y: `-=${dCta}`, duration: dCta }, sCta)
-      .fromTo(cta, { y: dCta }, { y: 0, duration: dCta }, sCta)
-      // call to action -> grown: a transform (scale), so no layout work per frame
-      .fromTo('.cta-video', { scale: 1 }, { scale: growScale, duration: dGrow, immediateRender: false }, sGrow)
-      // grown call to action -> examine
-      .to(cta, { y: `-=${dEx1}`, duration: dEx1 }, sEx1)
+    // last partner -> examine ("-=" moves each piece on from wherever it is by then)
+    tl.to(aboutAll, { y: `-=${dEx1}`, duration: dEx1 }, sEx1)
       .fromTo(ex, { y: exStart }, { y: 0, duration: exStart, immediateRender: !preRoll(ex, exStart, sEx1) }, sEx1)
       // examine -> the sketch's end layout
       .to('.ex-word', { x: EX.word[0] * u, y: EX.word[1] * u, scale: EX.word[2], duration: dEx2, ease: textEase }, sEx2)
@@ -732,8 +808,13 @@
         .fromTo(pCopies[k + 1], { y: paraRest[k + 1] - vh }, { y: paraRest[k + 1], duration: dSwap, ease: textEase, immediateRender: false }, swap)
         .fromTo(pWords[k + 1], { x: -Wpg }, { x: 0, duration: dSwap, ease: textEase, immediateRender: false }, swap);
     }
-    // last step -> locations
-    tl.to(lastStep, { y: `-=${dLeave}`, duration: dLeave }, sLoc)
+    // last step -> call to action
+    tl.to(lastStep, { y: `-=${dCta}`, duration: dCta }, sCta)
+      .fromTo(cta, { y: dCta }, { y: 0, duration: dCta }, sCta)
+      // call to action -> grown: a transform (scale), so no layout work per frame
+      .fromTo('.cta-video', { scale: 1 }, { scale: growScale, duration: dGrow, immediateRender: false }, sGrow)
+      // grown call to action -> locations
+      .to(cta, { y: `-=${dLeave}`, duration: dLeave }, sLoc)
       .fromTo(loc, { y: dLoc }, { y: 0, duration: dLoc, immediateRender: !preRoll(loc, dLoc, sLoc) }, sLoc)
       // locations -> the hero video: locations stays put (sticky) while the video pulls up over it
       .fromTo(['.end-bg', '.end-video'], { y: dEnd }, { y: 0, duration: dEnd }, sEnd)
@@ -743,20 +824,75 @@
       // footer -> the name rises in
       .fromTo('.foot-word', { y: dName }, { y: 0, duration: dName }, sName)
       // the name -> the final footer
-      .fromTo(['.foot-mail', '.foot-col'], { opacity: 0, y: 40 * u }, { opacity: 1, y: 0, duration: dLinks, ease: 'sine.out' }, sLinks)
+      .fromTo(['.foot-mail', '.foot-col'], { autoAlpha: 0, y: 40 * u }, { autoAlpha: 1, y: 0, duration: dLinks, ease: 'sine.out' }, sLinks)
       .set({}, {}, total);                      // keeps the timeline as long as the scroll
 
     buildLines({ W: document.querySelector('.stage').clientWidth, vh, u, small, total,
       // drawing starts as the hero video starts to shrink; the lines end under the footer, which
       // rises from sEnd; back in fully as the statement video leaves
       startScroll: s4, endScroll: sEnd, hideFrom: sZoom, hideTo: sAb + dAb - 150 * u });
+    // the workshops frames move sideways, and the big word switches halfway (2026-11-22). The last
+    // frame, the call to action (Figma 145:531), is reached by a scale-down instead: the video
+    // shrinks from the full screen into its 827 x 593 box at 343 / 197.5 while the last panel's
+    // columns fade, and the big word switches halfway as before.
+    // frame 0 is our. scope. (2026-11-23); panel i is frame i + 1, one screen further right each.
+    // Its logo row leaves to the left with it as the workshops frame comes in.
+    if (hasOS) {
+    tl.to('.os-logos', { x: -Wos, duration: dH }, sH(1));
+    wsPanels.forEach((p, i) => gsap.set(p, { x: (i + 1) * Wos }));
+    for (let k = 1; k <= lastWs; k++) gsap.set(frameWords(k), { yPercent: 105 });
+    gsap.set(frameWords(0), { yPercent: 0 });
+    for (let k = 1; k <= lastWs; k++) {
+      const at = sH(k);
+      if (k < lastWs) tl.to(wsPanels, { x: `-=${Wos}`, duration: dH }, at);
+      else {
+        const ox5 = (Wos - 1512 * u) / 2, oy5 = (vh - 982 * u) / 2;
+        const box = small ? { x: 20 * u, y: oy5 + 214 * u, w: 780 * u, h: 560 * u }
+                          : { x: ox5 + 343 * u, y: oy5 + 197.5 * u, w: 827 * u, h: 593 * u };
+        const last = wsPanels[wsPanels.length - 1];
+        const lastBg = last.querySelector('.ws-bg');
+        if (lastBg) tl.to(lastBg, { width: box.w, height: box.h, x: box.x, y: box.y, duration: dH, ease: 'sine.inOut' }, at);
+        else tl.to('.os-video', { width: box.w, height: box.h, x: box.x - osVid.offsetLeft, y: box.y - osVid.offsetTop, duration: dH, ease: 'sine.inOut' }, at);
+        tl.to(last.querySelectorAll('.ws-col'), { autoAlpha: 0, duration: 0.4 * dH }, at);
+      }
+      tl.fromTo(frameWords(k - 1), { yPercent: 0 }, { yPercent: -105, duration: 0.12 * dH, ease: 'power2.in', immediateRender: false }, at + 0.38 * dH)
+        .fromTo(frameWords(k), { yPercent: 105 }, { yPercent: 0, duration: 0.12 * dH, ease: 'power2.out', immediateRender: false }, at + 0.5 * dH);
+    }
+    // panel i (frame i + 1) with its own video: the our. scope. video goes once that frame has
+    // fully covered it; each frame's video plays only while that frame is on screen
+    const bgPanels = wsPanels.map((p, i) => [p.querySelector('.ws-bgvid'), i + 1]).filter(([v]) => v);
+    if (bgPanels.length) tl.set('.os-video', { autoAlpha: 0 }, sH(bgPanels[0][1]) + dH);
+    wsBgPlays.forEach((t) => t.kill());
+    wsBgPlays = bgPanels.map(([v, k]) => ScrollTrigger.create({
+      start: sH(k), end: k + 1 < lastWs ? sH(k + 1) + dH : sOSx + dOSx,
+      onToggle: (self) => (self.isActive ? v.play().catch(() => {}) : v.pause()),
+    }));
+    // the placeholder logos under "our. scope.": the row runs right to left, endlessly, while that
+    // frame shows. Enough copies to cover the screen plus one; the track slides from 0 to -1 copy
+    // and repeats, so the seam is never seen. Speed: 60 Figma pixels a second.
+    {
+      const track = document.querySelector('.os-logos-track');
+      const first = track.firstElementChild;
+      track.querySelectorAll('.os-logos-copy:not(:first-child)').forEach((c) => c.remove());
+      const copyW = first.offsetWidth;
+      for (let i = 0; i < Math.ceil(Wos / copyW) + 1; i++) track.appendChild(first.cloneNode(true));
+      if (logoRun) logoRun.kill();
+      logoRun = gsap.fromTo(track, { x: 0 }, { x: -copyW, duration: copyW / (60 * u), ease: 'none', repeat: -1, paused: true });
+      if (logoPlay) logoPlay.kill();
+      logoPlay = ScrollTrigger.create({ start: sFill - 0.05 * dAB, end: sH(1) + dH,
+        onToggle: (self) => (self.isActive && !window.WFM.reduced ? logoRun.play() : logoRun.pause()) });
+    }
+    // "(click me)" takes clicks only while it shows
+    if (wsLive) wsLive.kill();
+    wsLive = ScrollTrigger.create({ start: sH(lastWs) + 0.62 * dH, end: sOSx + 0.3 * dOSx, toggleClass: { targets: '.ws-click', className: 'is-live' } });
+    }   // (hasOS)
     lineReveal(vh);
     drawLogo();                                // the logo block in its shape for this screen right away
 
     // the call-to-action video plays only from the moment its section starts rising into view
     if (ctaPlay) ctaPlay.kill();
     ctaPlay = ScrollTrigger.create({
-      start: sCta, end: sEx1 + dEx1,             // until it has scrolled away for "examine."
+      start: sCta, end: sLoc + dLeave,           // until it has scrolled away for "locations."
       onToggle: (self) => (self.isActive ? ctaVideo.play().catch(() => {}) : ctaVideo.pause()),
     });
     // the process videos play only while their step is showing (2026-11-20):
@@ -764,13 +900,13 @@
     //   "execute."'s video has faded in over it. The consult copy starts at the examine copy's
     //   time, so the cross-fade shows no jump;
     // - execution (execute.): from when it starts fading in until "manage."'s has replaced it;
-    // - brand strategy (manage.): from when it starts fading in until it has left for "locations.".
+    // - brand strategy (manage.): from when it starts fading in until it has left for the call to action.
     const swapAt = (k) => sSteps + k * (dWord + dSwap + hold) + dWord;   // video k+1 starts fading in
     const [vEx, vConsult, vExecute, vManage] = stepVideos;
     const plays = [
       [[vEx, vConsult], sEx1 - 200 * u, swapAt(1) + dSwap],
       [[vExecute], swapAt(1), swapAt(2) + dSwap],
-      [[vManage], swapAt(2), sLoc + dLeave],
+      [[vManage], swapAt(2), sCta + dCta],
     ];
     // the featured projects' videos (2026-11-20): only the card in focus plays (the strips show
     // their poster frame), from when it starts opening into the big card until it has folded
@@ -778,12 +914,27 @@
     // the statement video (juma kaffee) plays from the moment the statement starts rising in until the
     // video box has left the top for the about section
     if (stPlay) stPlay.kill();
+    // "our." and "scope." play in once the zoom has filled the screen, and back out above it
+    if (wsPlay) wsPlay.kill();
+    if (osPlay) osPlay.kill();
+    if (hasOS) wsPlay = ScrollTrigger.create({
+      start: sFill - 0.05 * dAB,
+      onEnter: () => wsIntro.play(),
+      onLeaveBack: () => wsIntro.reverse(),
+    });
+    // the our. scope. video plays while that section shows
+    const osV = document.querySelector('.os-vid');
+    if (hasOS) osPlay = ScrollTrigger.create({
+      start: sOS, end: sOSx + dOSx,
+      onToggle: (self) => (self.isActive ? osV.play().catch(() => {}) : osV.pause()),
+    });
     stPlay = ScrollTrigger.create({
       start: sSt, end: sAb + dAb,
       onToggle: (self) => (self.isActive ? stVid.play().catch(() => {}) : stVid.pause()),
     });
     projPlays.forEach((p) => p.kill());
-    projPlays = projVideos.map((v, j) => ScrollTrigger.create({
+    // (placeholder cards from "show more" have no video yet and are skipped)
+    projPlays = projs.map((card, j) => [card.querySelector('.proj-video'), j]).filter(([v]) => v).map(([v, j]) => ScrollTrigger.create({
       start: j === 0 ? s6 - 200 * u : sP + (j - 1) * (dP + hold),
       end: j === steps ? sOut + dOut : sP + j * (dP + hold) + dP,
       onToggle: (self) => (self.isActive ? v.play().catch(() => {}) : v.pause()),
@@ -809,7 +960,94 @@
   // Rebuild whenever the frame scale or the screen height really changes: the probe's own
   // size changes exactly then. Build once right away so "we" never flashes at its frame 23 spot.
   splitParagraphs();
+  // ---- The entrance of "our." and "scope." (Figma 152:537; was the workshops text until
+  // 2026-11-23, which now comes in sideways), as the MTM site's hero text (mtm-coiffure
+  // js/intro-motion.js): each line slides up into place from behind its own bottom edge (its mask
+  // clips it), 0.9 s with power4.out, the next 0.2 s later. Played forward once the zoom has filled
+  // the screen, backwards when scrolled back above that point.
+  // ---- The FREIGEIST mask of "our. scope." (Figma 145:464 -> 210:86, 2026-11-23) ----
+  // The letters (in the units of Figma's "Subtract" box, which sits at -108 / -11 in the frame)
+  // are placed with the wordmark's middle (756.5 / 539 in the frame) on the middle of the screen,
+  // at the frame scale (phones: fitted into the 780 wide canvas). The zoom scales them about the
+  // middle of the "i" of "geist" (687 / 549; Figma's three zoom frames scale about this point
+  // too, give or take) by s = end ^ p, so each step of scroll zooms by the same factor. "end" is
+  // measured once per build: the smallest zoom at which the "i" covers every point of a 13 x 13
+  // grid over the screen, plus 8%. Only the letter group's transform changes per frame.
+  function osMaskLayout(W, H, u, small) {
+    const g = document.querySelector('.os-cut-g');
+    const path = document.querySelector('.os-letters');
+    const k = small ? (780 * u) / 1429 : u;
+    const F0 = [756.5, 539], C = [687, 549], OFF = [108, 11];
+    const Cs = [W / 2 + (C[0] - F0[0]) * k, H / 2 + (C[1] - F0[1]) * k];
+    const inI = (s) => {
+      for (let i = 0; i <= 12; i++) for (let j = 0; j <= 12; j++) {
+        const px = (W * i) / 12, py = (H * j) / 12;
+        const pt = new DOMPoint(C[0] + OFF[0] + (px - Cs[0]) / (k * s), C[1] + OFF[1] + (py - Cs[1]) / (k * s));
+        if (!path.isPointInFill(pt)) return false;
+      }
+      return true;
+    };
+    let end = 1;
+    while (end < 600 && !inI(end)) end *= 1.04;
+    end *= 1.08;
+    const z = { p: 0, end };
+    z.draw = () => {
+      const s = Math.pow(end, z.p) * k;
+      g.setAttribute('transform', `translate(${Cs[0].toFixed(2)} ${Cs[1].toFixed(2)}) scale(${s.toFixed(5)}) translate(${-(C[0] + OFF[0])} ${-(C[1] + OFF[1])})`);
+    };
+    z.draw();
+    return z;
+  }
+  const wsIntro = gsap.timeline({ paused: true });
+  [['.os-our .ws-in', 0], ['.os-scope .ws-in', 0]].forEach(([sel, each], i) => {
+    gsap.set(sel, { yPercent: 105 });
+    wsIntro.fromTo(sel, { yPercent: 105 }, { yPercent: 0, duration: 0.9, ease: 'power4.out', stagger: each }, i * 0.2);
+  });
+  // then the placeholder logo row fades in under them
+  wsIntro.fromTo('.os-logos', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, ease: 'sine.out' }, 0.5);
+
+  // ---- "show more": more projects (Figma 208:6, 2026-11-22) ----
+  // The rest of the portfolio. Each click adds the next three after the last card, and the scroll
+  // carries on through them. To add a real project, fill in a line: name and tags as shown on the
+  // card (tags may break with <br>), and video: the file name in /videos without its ending
+  // (e.g. 'Scene-7' for Scene-7_mp4.mp4 / Scene-7_webm.webm / Scene-7_poster.0000000.jpg), or
+  // null for a placeholder. The button disappears when the list is used up.
+  const MORE_PROJECTS = [
+    { name: 'project 7', tags: 'industry &amp;<br>category.', video: null },
+    { name: 'project 8', tags: 'industry &amp;<br>category.', video: null },
+    { name: 'project 9', tags: 'industry &amp;<br>category.', video: null },
+  ];
+  let moreShown = 0;
+  function moreLeft() { return MORE_PROJECTS.length - moreShown; }
+  const showMoreBtn = document.querySelector('.show-more');
+  if (showMoreBtn) showMoreBtn.addEventListener('click', () => {
+    const work = document.querySelector('.work');
+    const before = document.querySelectorAll('.proj').length;
+    MORE_PROJECTS.slice(moreShown, moreShown + 3).forEach((p, k) => {
+      const i = before + k;
+      const card = document.createElement('a');
+      card.className = `proj proj-${i + 1}`;
+      card.style.setProperty('--i', i);
+      card.setAttribute('aria-label', `${p.name} project`);
+      card.innerHTML = p.video
+        ? `<video class="proj-video" muted loop playsinline preload="metadata" poster="../videos/${p.video}_poster.0000000.jpg"><source src="../videos/${p.video}_webm.webm" type="video/webm"><source src="../videos/${p.video}_mp4.mp4" type="video/mp4"></video>`
+        : '<span class="project-placeholder">video placeholder</span>';
+      const name = document.createElement('p'), tags = document.createElement('p');
+      name.className = 'proj-name'; tags.className = 'proj-tags';
+      name.style.setProperty('--i', i); tags.style.setProperty('--i', i);
+      name.textContent = `${p.name}.`; tags.innerHTML = p.tags;
+      work.append(card, name, tags);
+      moreShown++;
+    });
+    build();
+    ScrollTrigger.refresh();
+    // carry on to the first new project
+    const next = window.V2 && window.V2.frames['p' + (before + 1)];
+    if (next !== undefined && window.WFM.lenis) window.WFM.lenis.scrollTo(next, { duration: 1.4 });
+  });
+
   build();
+
   let rz;
   new ResizeObserver(() => {
     clearTimeout(rz);
