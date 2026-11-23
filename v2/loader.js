@@ -83,7 +83,13 @@
     };
     // the loader goes at the hand-over; the page may scroll only once the logo has its own shape back
     const handOver = () => { drawStrip(); loader.style.transition = 'none'; loader.classList.add('is-done'); };
-    const restore = () => { path.setAttribute('d', d0); logo.setAttribute('viewBox', vb0); logo.style.width = ''; release(); };
+    // hand the block back: the page redraws it for wherever it is now (2026-11-22: putting the
+    // hero shape back left it stuck in that shape if the page had moved during the loader)
+    const restore = () => {
+      logo.style.width = '';
+      if (window.V2 && window.V2.redrawLogo) window.V2.redrawLogo(); else { path.setAttribute('d', d0); logo.setAttribute('viewBox', vb0); }
+      release();
+    };
     gsap.timeline({ onComplete: restore })
       .to(icon, { ...iconTo(W, H), scale: size / w0, transformOrigin: '0 0', filter: 'blur(0px)', duration: 1, ease }, 0)
       .to(loader, { clipPath: inset(0, 0, H - box.bottom, 0), duration: 0.8, ease }, 1)

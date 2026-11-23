@@ -50,7 +50,9 @@ body {
   inset: 0;
   height: auto;
   overflow: hidden;
-  background: #fff;                 /* shows once the video shrinks (Figma frame 109:3) */
+  /* the white page, shown once the video shrinks (Figma frame 109:3): the canvas's own tone; its
+     weave comes from the canvas layer over the whole page (.canvas-grain, 2026-11-22) */
+  background: #ededed;
 }
 
 /* the scroll distance for the frame-to-frame transitions; height is set by v2.js */
@@ -985,4 +987,44 @@ html.menu-open .menu { transform: translateY(0); }
 /* phones: the icon is far wider than the screen, so its middle (the eyes) is centred instead */
 @media (max-width: 767px) {
   .loader-icon { --x: -307; }
+}
+
+/* the brand guidelines' line elements (v2.js lays them out and draws them in): thin lines in the
+   background, under every video, box and word (2026-11-22). White with a colour flip, so they come out
+   black on the white page; anything on top of them covers them. */
+.lines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100svh;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lines path {
+  fill: none;
+  stroke: #fff;
+  /* fine and soft, so they stay in the background (2026-11-22: was 1.25px at full strength) */
+  stroke-width: 0.75px;
+  stroke-opacity: 0.45;
+  stroke-linecap: round;
+}
+html:not(.motion) .lines { display: none; }
+
+/* ---- the canvas over everything (2026-11-22) ----
+   img/canvas-grain.webp is only the weave of the supplied canvas texture: its fine light and shadow
+   around a neutral mid grey (the large-scale tone taken out), from an 800 x 800 patch mirrored four
+   ways so the copies meet without a join, then made finer (65%, resampled once in the file). Hard-light (a quarter strength) adds that relief to whatever is
+   underneath, light or dark, black included, without changing its overall colour: the page, videos, photos, text, menu and loader all
+   look drawn on the canvas. Shown at its own pixel size (sharp), fixed like a sheet under the
+   drawing, and it never takes clicks. */
+.canvas-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: url(img/canvas-grain.webp) 0 0 / 1040px 1040px repeat;   /* 65% of the canvas's own scale (2026-11-22: finer) */
+  mix-blend-mode: hard-light;          /* unlike soft-light it also shows on pure black (boxes, menu) */
+  opacity: 0.25;                       /* a quarter: present everywhere, never noisy */
 }

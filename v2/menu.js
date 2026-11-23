@@ -60,6 +60,14 @@
         cards.push(c);
       }
     }
+    // phones and tablets (2026-11-22): the page name sits just under the big card in the middle
+    // instead of on the bottom row (desktop keeps the CSS spot, on the "menu." / "exit." line)
+    if (matchMedia('(max-width: 1023px)').matches) {
+      const bigBottom = (BIG_CY / 461) * H + (BIG_H * su) / 2;
+      nameEl.style.top = (bigBottom + 6).toFixed(1) + 'px';
+    } else {
+      nameEl.style.top = '';
+    }
     render();
   }
 

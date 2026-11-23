@@ -124,6 +124,84 @@
     logoSvg.style.transform = t ? `translateX(${-logoLeft * t}px)` : '';   // from its hero spot to the screen's edge
   }
 
+  // ---- The brand guidelines' line elements (2026-11-20) ----
+  // Thin lines in the background of the white sections (under every video, box and word; first
+  // in the stage), as in the brand guidelines: long diagonals that bounce
+  // off the screen's sides and big arcs. They are laid out along the whole scroll (y = scroll
+  // position), so a line simply runs on from one section into the next and is never cut at a
+  // section's edge; the layer shows the slice of that long strip at the current scroll (its
+  // viewBox moves with the scroll). Each line draws itself in just ahead of the bottom of the
+  // screen as you scroll down, and undraws scrolling back up. They start once the hero video has
+  // shrunk away, step aside while the statement video fills the screen, and end under the
+  // closing video. Built once per build; per frame only attributes change, nothing is measured.
+  const linesSvg = document.querySelector('.lines');
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  // Each line moves at its own speed (2026-11-22, "more dynamic"): a line with speed s sits in a
+  // strip that slides s pixels per pixel scrolled, so some drift slower than the page and some
+  // run faster, and they slide past one another. Each line's drawing is timed to its own speed,
+  // so its tip still sits 85% down the screen, every line starts drawing as the hero video starts
+  // to shrink (startScroll), and every line's far end stays under the rising footer.
+  function buildLines({ W, vh, u, small, total, startScroll, endScroll, hideFrom, hideTo }) {
+    if (!linesSvg) return;
+    linesSvg.textContent = '';
+    linesSvg.setAttribute('viewBox', `0 0 ${W} ${vh}`);
+    gsap.set(linesSvg, { opacity: 1 });
+    const lead = 0.85 * vh;                      // the drawn tip sits 85% down the screen
+    const groups = [];                           // [group, speed]
+    // d is in the line's own strip (y = s x scroll + screen y); start / end are scroll positions
+    const add = (d, len, start, end, s) => {
+      const g = document.createElementNS(SVGNS, 'g');
+      const p = document.createElementNS(SVGNS, 'path');
+      p.setAttribute('d', d);
+      p.style.strokeDasharray = `${len} ${len + 4}`;
+      p.style.strokeDashoffset = String(len + 2);                    // nothing drawn yet (no cap dot)
+      g.appendChild(p);
+      linesSvg.appendChild(g);
+      groups.push([g, s]);
+      tl.fromTo(p, { strokeDashoffset: len + 2 }, { strokeDashoffset: 0, duration: end - start, immediateRender: false }, start);
+    };
+    // diagonals at a fixed slant, bouncing from side to side down to the end. No line starts or
+    // turns on the page (2026-11-22): each starts just beyond a side of the screen and bounces
+    // just beyond the sides, so only lines passing through are ever seen.
+    const OUT = 30;                              // px beyond the screen's sides
+    const bounce = (goingRight, rise, s) => {    // rise: strip length it takes to cross the screen once
+      const span = W + 2 * OUT, m = span / rise; // sideways per unit down
+      const from = s * startScroll + lead, to = s * endScroll + 1.5 * vh;
+      let x = goingRight ? -OUT : W + OUT, y = from, dir = goingRight ? 1 : -1, d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
+      while (y < to) {                           // the last stretch also runs on to a side, so the
+        const toWall = dir > 0 ? W + OUT - x : x + OUT;               // line ends off the page too
+        const dy = toWall / m;
+        x += dir * dy * m; y += dy; d += `L${x.toFixed(1)} ${y.toFixed(1)}`;
+        dir = -dir;
+      }
+      const len = (y - from) * Math.sqrt(1 + m * m);                 // the slant never changes
+      add(d, len, startScroll, (y - lead) / s, s);
+    };
+    bounce(true, (small ? 1.7 : 1.5) * vh, 0.75);                    // drifts behind the page
+    bounce(false, (small ? 3.1 : 2.6) * vh, 1.3);                    // runs ahead of it
+    // arcs: big circles centred beyond a side of the screen, alternating sides, one every ~2.4
+    // screens of scroll, each at its own speed; only the half facing into the screen is drawn
+    const R = small ? 1.15 * W : 0.95 * Math.max(W, vh);
+    const ARC_SPEEDS = [0.6, 1.15, 0.85, 1.4, 1];
+    for (let S = startScroll, k = 0; S < endScroll; S += 2.4 * vh, k++) {   // S: scroll where it starts
+      const s = ARC_SPEEDS[k % ARC_SPEEDS.length];
+      const top = s * S + lead, cy = top + R;
+      const left = k % 2 === 0, cx = left ? -0.35 * W : 1.35 * W;
+      const d = `M${cx.toFixed(1)} ${top.toFixed(1)}A${R.toFixed(1)} ${R.toFixed(1)} 0 0 ${left ? 1 : 0} ${cx.toFixed(1)} ${(cy + R).toFixed(1)}`;
+      add(d, Math.PI * R, S, (cy + R - lead) / s, s);
+    }
+    // the layer shows the slice at the current scroll; each line's strip is shifted so it slides
+    // at its own speed (screen y = strip y - s x scroll). Steps aside over the full-screen video.
+    const view = { y: 0 };
+    const place = () => {
+      linesSvg.setAttribute('viewBox', `0 ${view.y.toFixed(1)} ${W} ${vh}`);
+      groups.forEach(([g, s]) => g.setAttribute('transform', `translate(0 ${((1 - s) * view.y).toFixed(1)})`));
+    };
+    tl.fromTo(view, { y: 0 }, { y: total, duration: total, onUpdate: place }, 0)
+      .to(linesSvg, { opacity: 0, duration: 150 * u }, hideFrom)
+      .to(linesSvg, { opacity: 1, duration: 150 * u, immediateRender: false }, hideTo);
+  }
+
   // ---- Paragraph line reveal, ported from mtm-coiffure (js/word-reveal.js; 2026-11-20) ----
   // Same motion values: each line rises 0.6em and fades in with a back.out(1.7) pop, line by
   // line, scrubbed by scroll (so scrolling back up hides it again). MTM times a line from its
@@ -511,7 +589,9 @@
     frames.name = sLinks - hold / 2;           // Figma 49:294
     frames.final = total - hold / 2;           // Figma 49:282
     frames.mid = sAb + dAb - 296 * u;          // Figma 140:378: the list 296 above its end spot
-    window.V2 = { frames };
+    // redrawLogo: the logo block in the right shape for the current scroll (the loader calls it
+    // when it hands the block back, in case the page has moved meanwhile)
+    window.V2 = { frames, redrawLogo: () => { lastLogoT = -1; drawLogo(); } };
 
     // starting places: project 1 in focus with its labels, the rest as strips below
     projs.forEach((el, j) => gsap.set(el, projState(j, P, u)));
@@ -666,6 +746,10 @@
       .fromTo(['.foot-mail', '.foot-col'], { opacity: 0, y: 40 * u }, { opacity: 1, y: 0, duration: dLinks, ease: 'sine.out' }, sLinks)
       .set({}, {}, total);                      // keeps the timeline as long as the scroll
 
+    buildLines({ W: document.querySelector('.stage').clientWidth, vh, u, small, total,
+      // drawing starts as the hero video starts to shrink; the lines end under the footer, which
+      // rises from sEnd; back in fully as the statement video leaves
+      startScroll: s4, endScroll: sEnd, hideFrom: sZoom, hideTo: sAb + dAb - 150 * u });
     lineReveal(vh);
     drawLogo();                                // the logo block in its shape for this screen right away
 
