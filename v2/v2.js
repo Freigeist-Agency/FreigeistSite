@@ -420,12 +420,15 @@
     const os = ['.os-our', '.os-scope', '.os-video', '.os-logos'];
     const Wos = document.querySelector('.stage').clientWidth;
     const osVid = document.querySelector('.os-video');
+    // pages built from an older copy of this page (the /globe page) have no our. scope. section:
+    // it then takes no scroll at all, and the statement follows the projects as it used to
+    const hasOS = !!(osVid && document.querySelector('.os-letters') && document.querySelector('.ws-panel'));
     const osBottom = vh;                                             // everything is full screen
-    const osZoom = osMaskLayout(Wos, vh, u, small);
+    const osZoom = hasOS ? osMaskLayout(Wos, vh, u, small) : { p: 0, draw() {} };
     const sOS = sOut + Math.max(0, oy + (P.y + P.h) * u - vh / 2);  // card bottom at mid-screen
-    const dOS = vh + 10 * u;
-    const sAB = Math.max(sOS + dOS, sFeat + dFeat) + hold;          // Figma 145:464, then the zoom
-    const dAB = 1400 * u;
+    const dOS = hasOS ? vh + 10 * u : 0;
+    const sAB = hasOS ? Math.max(sOS + dOS, sFeat + dFeat) + hold : sOS;          // Figma 145:464, then the zoom
+    const dAB = hasOS ? 1400 * u : 0;
     // the end frame (Figma 152:537): the words play in once the zoom is done
     const sFill = sAB + dAB;
     // the sideways frames: our. scope. (frame 0), then the workshops panels (Figma 73:484, 73:485,
@@ -438,15 +441,15 @@
     const wsRead = 0.6 * vh, dH = Wos;
     const sH = (k) => sFill + hold + wsRead + (k - 1) * (dH + wsRead);   // move to frame k (1, 2, ...)
     const lastWs = wsPanels.length + 1;                                  // the call to action's frame
-    const sOSx = sH(lastWs) + dH + wsRead;                              // after the last frame's pause, away
-    const dOSx = Math.max(osBottom, vh) + 10 * u;                     // the full-screen video's bottom
+    const sOSx = hasOS ? sH(lastWs) + dH + wsRead : sOS;                              // after the last frame's pause, away
+    const dOSx = hasOS ? Math.max(osBottom, vh) + 10 * u : 0;                     // the full-screen video's bottom
     // the statement follows the call to action's box (its last frame). Both move at scroll speed, so
     // the gap between the box's bottom and "(we help you to)" stays the same while both are on
     // screen; it was halved on 2026-11-22 (it used to start once the box's bottom passed the middle
     // of the screen). "(we help you to)" starts 10 below the screen.
     const boxBottom = (vh - 982 * u) / 2 + (small ? 214 + 560 : 197.5 + 593) * u;
     const gapWas = vh + 10 * u - boxBottom + Math.max(0, Math.max(osBottom, vh) - vh / 2);
-    const sSt = sOSx + Math.max(0, gapWas / 2 - (vh + 10 * u - boxBottom));
+    const sSt = hasOS ? sOSx + Math.max(0, gapWas / 2 - (vh + 10 * u - boxBottom)) : sOS;
     const ws = ['.ws-word', '.ws-panel'];
     const dSt = vh + 10 * u - (oy + 114 * u);
     const statement = ['.st-help', '.st-big', '.st-video', '.st-copy'];
@@ -830,6 +833,7 @@
     // columns fade, and the big word switches halfway as before.
     // frame 0 is our. scope. (2026-11-23); panel i is frame i + 1, one screen further right each.
     // Its logo row leaves to the left with it as the workshops frame comes in.
+    if (hasOS) {
     tl.to('.os-logos', { x: -Wos, duration: dH }, sH(1));
     wsPanels.forEach((p, i) => gsap.set(p, { x: (i + 1) * Wos }));
     for (let k = 1; k <= lastWs; k++) gsap.set(frameWords(k), { yPercent: 105 });
@@ -877,6 +881,7 @@
     // "(click me)" takes clicks only while it shows
     if (wsLive) wsLive.kill();
     wsLive = ScrollTrigger.create({ start: sH(lastWs) + 0.62 * dH, end: sOSx + 0.3 * dOSx, toggleClass: { targets: '.ws-click', className: 'is-live' } });
+    }   // (hasOS)
     lineReveal(vh);
     drawLogo();                                // the logo block in its shape for this screen right away
 
@@ -907,15 +912,15 @@
     if (stPlay) stPlay.kill();
     // "our." and "scope." play in once the zoom has filled the screen, and back out above it
     if (wsPlay) wsPlay.kill();
-    wsPlay = ScrollTrigger.create({
+    if (osPlay) osPlay.kill();
+    if (hasOS) wsPlay = ScrollTrigger.create({
       start: sFill - 0.05 * dAB,
       onEnter: () => wsIntro.play(),
       onLeaveBack: () => wsIntro.reverse(),
     });
     // the our. scope. video plays while that section shows
-    if (osPlay) osPlay.kill();
     const osV = document.querySelector('.os-vid');
-    osPlay = ScrollTrigger.create({
+    if (hasOS) osPlay = ScrollTrigger.create({
       start: sOS, end: sOSx + dOSx,
       onToggle: (self) => (self.isActive ? osV.play().catch(() => {}) : osV.pause()),
     });
