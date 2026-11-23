@@ -7,6 +7,7 @@
   <title>freigeist agency</title>
   <link rel="icon" href="../images/favicon.png">
   <link rel="stylesheet" href="v2.css">
+  <link rel="stylesheet" href="fred.css">
 </head>
 <body>
   <!-- the loader (Figma 73:766 -> 191:363 -> the site): the blurred icon brightens from 29% to full as
@@ -107,11 +108,40 @@
       <p class="proj-name" style="--i: 5">vitali koch.</p>
       <p class="proj-tags" style="--i: 5">finance &amp;<br>insurance.</p>
     </div>
+    <!-- Figma 208:6: "show more" under the last project; adds the next three from the project
+         list in v2.js (MORE_PROJECTS). Hidden once the list is used up. -->
+    <button class="show-more" type="button">show more</button>
 
     <!-- an endless carousel: v2.js repeats the copy to fill the screen and moves it left to right -->
     <h2 class="featured" aria-label="featured work.">
       <span class="featured-track" aria-hidden="true"><span class="featured-copy">featured work.</span></span>
     </h2>
+
+    <!-- "our. scope." (Figma 145:464 -> 152:537, 2026-11-22), between the featured projects and the
+         statement: "our." top left and "scope." bottom right slide to the centre while the video
+         grows and darkens over them. The words come first so the video covers them. -->
+    <h2 class="os-word os-our" aria-label="our scope.">our.</h2>
+    <p class="os-word os-scope" aria-hidden="true">scope.</p>
+    <div class="os-video" aria-hidden="true"><video class="os-vid" muted loop playsinline preload="metadata" poster="../videos/MOTUS-INTIMI-RENDER---NO-TEXT_poster.0000000.jpg"><source src="../videos/MOTUS-INTIMI-RENDER---NO-TEXT_webm.webm" type="video/webm"><source src="../videos/MOTUS-INTIMI-RENDER---NO-TEXT_mp4.mp4" type="video/mp4"></video><span class="os-shade"></span></div>
+
+    <!-- the workshops frames (Figma 73:484, 73:485, 73:492, 73:498, 145:531; 2026-11-22), on the our.
+         scope. video once it fills the screen. Each frame is a panel; scrolling moves sideways from
+         one panel to the next, and the big word in the middle switches halfway. The first frame rises
+         in line by line like the MTM site's hero text (v2.js). The repeated items are Figma's
+         placeholders. Frames 2-4 bring their own background video with them (blaustrand, joline meens,
+         vitali koch; 2026-11-22). The last frame is a call to action: the video scales down into a box on the white
+         page, and "(click me)" starts an email. The big words come after the panels so they flip colour over
+         the box. -->
+    <div class="ws-panel ws-panel-0"><div class="ws-col ws-col-1"><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span></div><div class="ws-col ws-col-2"><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span></div><div class="ws-col ws-col-3"><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span></div></div>
+    <div class="ws-panel ws-panel-1"><div class="ws-bg" aria-hidden="true"><video class="ws-bgvid" muted loop playsinline preload="metadata" poster="../videos/Scene-7_poster.0000000.jpg"><source src="../videos/Scene-7_webm.webm" type="video/webm"><source src="../videos/Scene-7_mp4.mp4" type="video/mp4"></video><span class="ws-bgshade"></span></div><div class="ws-col ws-col-1"><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span></div><div class="ws-col ws-col-2"><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span></div><div class="ws-col ws-col-3"><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span></div></div>
+    <div class="ws-panel ws-panel-2"><div class="ws-bg" aria-hidden="true"><video class="ws-bgvid" muted loop playsinline preload="metadata" poster="../videos/efce1605-2cd0-4a55-81d3-e1c0b08e429b_poster.0000000.jpg"><source src="../videos/efce1605-2cd0-4a55-81d3-e1c0b08e429b_webm.webm" type="video/webm"><source src="../videos/efce1605-2cd0-4a55-81d3-e1c0b08e429b_mp4.mp4" type="video/mp4"></video><span class="ws-bgshade"></span></div><div class="ws-col ws-col-1"><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span></div><div class="ws-col ws-col-2"><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span></div><div class="ws-col ws-col-3"><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span></div></div>
+    <div class="ws-panel ws-panel-3"><div class="ws-bg" aria-hidden="true"><video class="ws-bgvid" muted loop playsinline preload="metadata" poster="../videos/Sequenz-01_1_poster.0000000.jpg"><source src="../videos/Sequenz-01_1_webm.webm" type="video/webm"><source src="../videos/Sequenz-01_1_mp4.mp4" type="video/mp4"></video><span class="ws-bgshade"></span></div><div class="ws-col ws-col-1"><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">introduction to positioning &amp; brand.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for business owners and marketing team leaders</span></span></span></div><div class="ws-col ws-col-2"><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">storytelling &amp; framing in advertising.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing teams</span></span></span></div><div class="ws-col ws-col-3"><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span><span class="ws-item"><span class="ws-mask"><span class="ws-in">effective digital marketing &amp; sales.</span></span><span class="ws-mask ws-sub"><span class="ws-in">for in house marketing &amp; sales teams</span></span></span></div></div>
+    <h3 class="ws-word ws-word-0"><span class="ws-mask"><span class="ws-in"><span class="ws-swap">workshops</span></span></span></h3>
+    <h3 class="ws-word ws-word-1"><span class="ws-mask"><span class="ws-in"><span class="ws-swap">consultation</span></span></span></h3>
+    <h3 class="ws-word ws-word-2"><span class="ws-mask"><span class="ws-in"><span class="ws-swap">projects</span></span></span></h3>
+    <h3 class="ws-word ws-word-3"><span class="ws-mask"><span class="ws-in"><span class="ws-swap">retainers</span></span></span></h3>
+    <p class="ws-word ws-word-4 ws-pre" aria-hidden="true"><span class="ws-mask"><span class="ws-in"><span class="ws-swap">to get started.</span></span></span></p>
+    <a class="ws-word ws-word-4 ws-click" href="mailto:sema@freigeist.agency" aria-label="to get started: send us an email"><span class="ws-mask"><span class="ws-in"><span class="ws-swap">(click me)</span></span></span></a>
 
     <!-- Figma frame 102:6, the statement. The video placeholder comes before the paragraph so
          the paragraph's colour flip turns it white where it overlaps the video. Text tidied
@@ -155,17 +185,6 @@
     <p class="ab-cap">(partner 3) name.</p>
     <p class="ab-cap">(partner 4) name.</p>
 
-    <!-- Figma frame 154:602, the call to action. Clicking starts an email to sema@freigeist.agency.
-         The video comes before the text so the text's colour flip works over it. -->
-    <a class="cta-video" href="mailto:sema@freigeist.agency" tabindex="-1" aria-hidden="true">
-      <video muted loop playsinline preload="metadata" poster="../videos/cta-poster.jpg">
-        <source src="../videos/cta.webm" type="video/webm">
-        <source src="../videos/cta.mp4" type="video/mp4">
-      </video>
-    </a>
-    <p class="cta-sub">to get started.</p>
-    <a class="cta-click" href="mailto:sema@freigeist.agency">(click me)</a>
-
     <!-- Figma frame 4:2, the first process step. The box (the examination video, also used for
          "consult.", 2026-11-20) comes before the text
          so the text's colour flip works over it. -->
@@ -190,6 +209,17 @@
     <p class="pc pc-2">the examination results allow us to effectively restructure your offer and sales process, corner your target audience &amp; develop your brand &amp; advertising strategy in a way that resonates with your target audience. this allows you to crystalise yourself from the crowd.</p>
     <p class="pc pc-3">we execute the developed strategy for your local &amp; online brand presence, take your sales team through our sales workshop to equip them with the skills needed to convert the new leads and drop you into your new client pool with your advertising campaigns.</p>
     <p class="pc pc-4">if needed, we manage and direct and operate media buying, strategy &amp; production so that you can concentrate on making sales and delivering your product or service.</p>
+
+    <!-- Figma frame 154:602, the call to action (after the process steps since 2026-11-23). Clicking starts an email to sema@freigeist.agency.
+         The video comes before the text so the text's colour flip works over it. -->
+    <a class="cta-video" href="mailto:sema@freigeist.agency" tabindex="-1" aria-hidden="true">
+      <video muted loop playsinline preload="metadata" poster="../videos/cta-poster.jpg">
+        <source src="../videos/cta.webm" type="video/webm">
+        <source src="../videos/cta.mp4" type="video/mp4">
+      </video>
+    </a>
+    <p class="cta-sub">to get started.</p>
+    <a class="cta-click" href="mailto:sema@freigeist.agency">(click me)</a>
 
     <!-- Figma frame 186:285: locations, with the live page's globe in reversed colours
          (globe.js). The globe comes before the text so the text's colour flip works over it. -->
@@ -240,6 +270,8 @@
   <script src="v2.js"></script>
   <script src="menu.js"></script>
   <script src="loader.js"></script>
+  <!-- FRED, the ghost cursor (from the live homepage), always the inverse of what is under it -->
+  <script src="fred.js"></script>
   <script type="module" src="globe.js"></script>
 </body>
 </html>
