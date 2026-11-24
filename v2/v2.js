@@ -312,7 +312,7 @@
   function build() {
     if (tl) { tl.scrollTrigger.kill(); tl.kill(); }
     readProjects();
-    gsap.set(['.logo-block', '.scroll-hint', '.wm', ...we, '.portfolio', '.bg-video', '.featured', '.work', ...projs, '.os-our', '.os-scope', '.os-video', '.os-logos', '.ws-word', '.ws-panel', '.st-help', '.st-big', '.st-video', '.st-copy', '.stat', '.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap', '.cta-video', '.cta-sub', '.cta-click', '.ex-box', '.ex-word', '.ex-copy', '.ex-services', '.pw', '.pc', '.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras, '.end-bg', '.end-video', '.foot-word', '.foot-mail', '.foot-col'], { clearProps: 'transform' });
+    gsap.set(['.logo-block', '.scroll-hint', '.wm', ...we, '.portfolio', '.bg-video', '.featured', '.work', ...projs, '.os-our', '.os-scope', '.os-video', '.os-logos', '.ws-word', '.ws-panel', '.ws-col', '.st-help', '.st-big', '.st-video', '.st-copy', '.stat', '.ab-list', '.ab-text', '.ab-photo', '.ab-about', '.ab-cap', '.cta-video', '.cta-sub', '.cta-click', '.ex-box', '.ex-word', '.ex-copy', '.ex-services', '.pw', '.pc', '.loc-globe', '.loc-word', '.loc-place', '.loc-info', ...locExtras, '.end-bg', '.end-video', '.foot-word', '.foot-mail', '.foot-col'], { clearProps: 'transform' });
     gsap.set('.end-video', { clearProps: 'width,height,left,top' });   // the footer shrink sets these
     gsap.set('.os-shade', { clearProps: 'opacity' });                  // our. scope. darkening
     gsap.set('.os-video', { clearProps: 'width,height' });             // ... and its fill
@@ -838,13 +838,22 @@
     // frame 0 is our. scope. (2026-11-23); panel i is frame i + 1, one screen further right each.
     // Its logo row leaves to the left with it as the workshops frame comes in.
     if (hasOS) {
-    tl.to('.os-logos', { x: -Wos, duration: dH }, sH(1));
-    wsPanels.forEach((p, i) => gsap.set(p, { x: (i + 1) * Wos }));
+    // The cards stack (2026-11-24): every card waits one screen to the right and, on its move,
+    // slides in over the one before, which stays where it is; once covered, that one is hidden
+    // (so nothing shows around the last card when it scales down). While a card slides in, its
+    // listings grow from 75% to full size about their own middle. Same moves and timing as before.
+    gsap.set(wsPanels, { x: Wos });
+    wsPanels.forEach((p) => gsap.set(p.querySelectorAll('.ws-col'), { scale: 0.75, transformOrigin: '50% 50%' }));
     for (let k = 1; k <= lastWs; k++) gsap.set(frameWords(k), { yPercent: 105 });
     gsap.set(frameWords(0), { yPercent: 0 });
     for (let k = 1; k <= lastWs; k++) {
       const at = sH(k);
-      if (k < lastWs) tl.to(wsPanels, { x: `-=${Wos}`, duration: dH }, at);
+      if (k < lastWs) {
+        const card = wsPanels[k - 1];
+        tl.fromTo(card, { x: Wos }, { x: 0, duration: dH, immediateRender: false }, at)
+          .fromTo(card.querySelectorAll('.ws-col'), { scale: 0.75 }, { scale: 1, duration: dH, immediateRender: false }, at);
+        if (k >= 2) tl.set(wsPanels[k - 2], { autoAlpha: 0 }, at + dH);
+      }
       else {
         const ox5 = (Wos - 1512 * u) / 2, oy5 = (vh - 982 * u) / 2;
         const box = small ? { x: 20 * u, y: oy5 + 214 * u, w: 780 * u, h: 560 * u }
@@ -865,7 +874,13 @@
     wsBgPlays.forEach((t) => t.kill());
     wsBgPlays = bgPanels.map(([v, k]) => ScrollTrigger.create({
       start: sH(k), end: k + 1 < lastWs ? sH(k + 1) + dH : sOSx + dOSx,
-      onToggle: (self) => (self.isActive ? v.play().catch(() => {}) : v.pause()),
+      // the workshops card carries a copy of the our. scope. video: it starts where that one is
+      onToggle: (self) => {
+        if (!self.isActive) { v.pause(); return; }
+        const os = document.querySelector('.os-vid');
+        if (k === 1 && os && os.currentSrc === v.currentSrc && os.readyState > 0) v.currentTime = os.currentTime;
+        v.play().catch(() => {});
+      },
     }));
     // the placeholder logos under "our. scope.": the row runs right to left, endlessly, while that
     // frame shows. Enough copies to cover the screen plus one; the track slides from 0 to -1 copy
