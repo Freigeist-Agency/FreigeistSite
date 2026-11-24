@@ -50,8 +50,8 @@ body {
   inset: 0;
   height: auto;
   overflow: hidden;
-  /* the white page, shown once the video shrinks (Figma frame 109:3): the canvas's own tone; its
-     weave comes from the canvas layer over the whole page (.canvas-grain, 2026-11-22) */
+  /* the white page, shown once the video shrinks (Figma frame 109:3): the canvas's tone (the
+     canvas texture over the page was taken out on 2026-11-24) */
   background: #ededed;
 }
 
@@ -785,7 +785,9 @@ html:not(.motion) .portfolio { --y: 1700; }
   .pw { --x: 20; --y: 83.3; font-size: calc(207 * var(--u)); }
   /* the video starts at the canvas edge here, so "services" sits at the left margin over it,
      still centred on its height (scale 780 / 732 = 1.066) */
-  .ex-services { --x: 20; --y: 452.1; font-size: calc(68.2 * var(--u)); }
+  /* "services" bottom-aligned with the step's paragraph (2026-11-24): its baseline on the
+     paragraph's last baseline (every paragraph ends 10 above the video's bottom), measured at 375 */
+  .ex-services { --x: 20; --y: 786.9; font-size: calc(68.2 * var(--u)); }
   .pc { --x: 450; --y: 696.8; width: calc(349 * var(--u)); font-size: max(12px, 24 * var(--u)); }
   /* locations: "locations." would start past the screen's middle, so it moves to the left
      edge with the labels under it; the globe stays big, rising from the bottom */
@@ -1014,23 +1016,6 @@ html.menu-open .menu { transform: translateY(0); }
   stroke-linecap: round;
 }
 html:not(.motion) .lines { display: none; }
-
-/* ---- the canvas over everything (2026-11-22) ----
-   img/canvas-grain.webp is only the weave of the supplied canvas texture: its fine light and shadow
-   around a neutral mid grey (the large-scale tone taken out), from an 800 x 800 patch mirrored four
-   ways so the copies meet without a join, then made finer (65%, resampled once in the file). Hard-light (a quarter strength) adds that relief to whatever is
-   underneath, light or dark, black included, without changing its overall colour: the page, videos, photos, text, menu and loader all
-   look drawn on the canvas. Shown at its own pixel size (sharp), fixed like a sheet under the
-   drawing, and it never takes clicks. */
-.canvas-grain {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-  background: url(img/canvas-grain.webp) 0 0 / 1040px 1040px repeat;   /* 65% of the canvas's own scale (2026-11-22: finer) */
-  mix-blend-mode: hard-light;          /* unlike soft-light it also shows on pure black (boxes, menu) */
-  opacity: 0.25;                       /* a quarter: present everywhere, never noisy */
-}
 
 /* "show more" (Figma 208:6): 64 px, underlined, centred under the last project's card (centre 755.5,
    top 880), flipping colour like the other words. v2.js shows it only while the last project is
